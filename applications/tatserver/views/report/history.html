@@ -1,0 +1,250 @@
+{{extend 'layout.html'}}
+
+<script type="text/javascript" src="{{=URL('static','js/jscharts.js')}}"></script>
+
+<script type="text/javascript" src="{{=URL('static','js/FUSIONCHARTS.COM/fusioncharts.js')}}"></script>
+<script type="text/javascript" src="{{=URL('static','js/FUSIONCHARTS.COM/themes/fusioncharts.theme.fint.js')}}"></script>
+
+<head>
+    <style type="text/css">
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+      #container {
+        width : 800px;
+        height: 600px;
+        margin: 8px auto;
+      }
+    </style>
+  </head>
+
+<div role="tabpanel">
+
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a></li>
+    <li role="presentation"><a href="#graph" aria-controls="graph" role="tab" data-toggle="tab">graph</a></li>
+    <li role="presentation"><a href="#casegraph" aria-controls="casegraph" role="tab" data-toggle="tab">case</a></li>
+    <li role="presentation"><a href="#paretograph" aria-controls="paretograph" role="tab" data-toggle="tab">pareto</a></li>
+<!-- {{for case in status_span:}}
+    <li role="presentation"><a a href="#{{=case}}" aria-controls="{{=case}}" role="tab" data-toggle="tab">{{=case}}</a></li>
+{{pass}}
+-->
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content" >
+    <div role="tabpanel" class="tab-pane active" id="home">
+    <table width="1000" align="center" border="2" cellpadding=0 cellspace=0>
+            <tr style="text-align:center;font-size: 18px" id="headline">
+            <th align="center" bgcolor='#66CCFF'>SW</th>
+            <th align="center" bgcolor='#66CCFF'>results</th>
+            <th align="center" bgcolor='#66CCFF'>datetime</th>
+            <th align="center" bgcolor='#66CCFF'>std</th>
+            <th align="center" bgcolor='#66CCFF'>mtbf</th>
+            </tr>
+            {{for report in reports:}}
+            <tr>
+                <td >{{=A(report.sw,_href=URL('report','show',args=[plan.id,report.id]))}}</td>
+                <td class = "{{=report.results}}">{{=report.results}}</td>
+                <td >{{=prettydate(report.datetime)}}</td>
+                <td >{{=report.std_level}}</td>
+                <td >{{=report.mtbf}}</td>
+            </tr>
+            {{pass}}
+    </table>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="casegraph">
+        <div id="caseCanvas">Loading graph...</div>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="graph">
+        <div id="graphCanvas">Loading graph...</div>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="paretograph" >
+        <ul>
+        <strong>  Pareto&ABC analysis</strong> is a Quality Tool,such as "80/20" rule to measurements the quantity and cost of the product.<br/>Help to Continuous improvement the product.
+        <li>A(<80%) is a critical defect area, and the major factor that clip the wings of our product.<br/>Modules in this area is not very good ,consume most of our resource,and need to estimate and improvement</li>
+        <li>B(80%~90%) is a normal defect area and the secondary factor that need to do far more.</li>
+        <li>C(90%~100%) is a mini defect area, and modules in this area is somehow good.</li>
+        </ul>
+        <div id="paretoCanvas" >Loading graph...</div>
+    </div>
+<!--
+{{for case in status_span:}}
+    <div role="tabpanel" class="tab-pane" id="{{=case}}">
+        <div id="{{=case}}Canvas">Loading graph...</div>
+    </div>
+{{pass}}
+ -->
+  </div>
+
+</div>
+<script>
+function history_graph(myData,colors) {
+//	var myData = new Array(['asdas', 2], ['asda12312s',4],['Feb', 1], ['Mar', 3], ['Apr', 6], ['May', 8], ['Jun', 10], ['Jul', 9], ['Aug', 8], ['Sep', 5], ['Oct', 6], ['Nov', 2], ['Dec', 4],['asdas', 2],['asdas', 2],['asdas', 2], ['asda12312s',4],['Feb', 1], ['Mar', 3], ['Apr', 6], ['May', 8], ['Jun', 10], ['Jul', 9], ['Aug', 8], ['Sep', 5], ['Oct', 6], ['Nov', 2], ['Dec', 4]);
+//	var colors = ['#EF2323','#EF2323','#EF2323','#D20202', '#A70000', '#850000', '#740000', '#530000', '#850000', '#B00000', '#9C0404', '#CE0000', '#BA0000','#CE0000', '#EF2323',  '#EF2323','#EF2323','#EF2323','#D20202', '#A70000', '#850000', '#740000', '#530000', '#850000', '#B00000', '#9C0404', '#CE0000', '#BA0000'];
+    try{
+        var myChart = new JSChart('graphCanvas', 'bar');
+        myChart.setTitle('History Stability Test Report');
+        myChart.setTitleColor('#8E8E8E');
+        myChart.setAxisNameX('SW');
+        myChart.setAxisNameY('MTBF');
+
+        myChart.setDataArray(myData);
+        myChart.colorizeBars(colors);
+        myChart.setDataArray(myData);
+        myChart.setAxisColor('#9D9F9D');
+        myChart.setAxisWidth(1);
+
+        myChart.setAxisNameColor('#655D5D');
+        myChart.setAxisNameFontSize(5);
+        myChart.setAxisPaddingLeft(50);
+        myChart.setAxisValuesDecimals(1);
+        myChart.setAxisValuesColor('#9C1919');
+        myChart.setTextPaddingLeft(0);
+
+        myChart.setBarBorderWidth(0);
+        myChart.setTitleColor('#8C8382');
+        myChart.setGridColor('#5D5F5D');
+        myChart.setSize(1000, 400);
+        myChart.draw();
+    }catch(e){
+        alert(e.name  +   " :  "   +  e.message);
+    }
+}
+var myColorPlane = ['blue','green','red','yellow','gray','aliceblue','blueviolet','chartreuse','coral','darkslategray','hotpink']
+function getRandomColorFromPlane(i){
+    //return "#"+("00000"+((Math.random()*16777215+0.5)>>0).toString(16)).slice(-6);
+    //return '#'+Math.floor(Math.random()*16777215).toString(16);
+    console.log(myColorPlane.length);
+    return myColorPlane[i%myColorPlane.length]
+}
+
+function getRandomColor(){
+    return "#"+("00000"+((Math.random()*16777215+0.5)>>0).toString(16)).slice(-6);
+}
+
+function case_graph(data) {
+    try{
+        var myChart = new JSChart('caseCanvas', 'line');
+        myChart.setSize(800, 600);
+        myChart.setTitle('Stability Test Cases Overview');
+        myChart.setTitleColor('#8E8E8E');
+        myChart.setAxisNameX('case');
+        myChart.setAxisNameY('MTBF');
+        myChart.setAxisValuesNumberY(5);
+        myChart.setIntervalStartY(0);
+        myChart.setIntervalEndY(200);
+        var jsdata = new Array();
+        var index = 0;
+        for (var i in data) {
+            var sw = [];
+            myChart.setLabelX([index,i]);
+            for(var j in data[i]) {
+                var runtime = Number(data[i][j].split(':')[0]);
+                if(jsdata.hasOwnProperty(j)){
+                    jsdata[j].push([index,runtime])
+                }
+                else {
+                    jsdata[j]=[[index,runtime]]
+                }
+            }
+            myChart.setLabelX([index,i]);
+            index+=1;
+        }
+        myChart.setShowXValues(false);
+        myChart.setTitleColor('#454545');
+        myChart.setAxisValuesColor('#454545');
+        myChart.setFlagColor('#9D16FC');
+        myChart.setFlagRadius(4);
+        myChart.setAxisPaddingRight(100);
+        myChart.setLegendShow(true);
+        myChart.setAxisValuesNumberX(index);
+        var case_index = 0;
+        for(var m in jsdata){
+            var color = getRandomColor(case_index);
+            myChart.setDataArray(jsdata[m], color);
+            myChart.setLineColor(getRandomColor(), color);
+            myChart.setLegendForLine(color, m);
+            case_index+=1;
+        }
+        myChart.draw();
+    }catch(e){
+        alert(e.name  +   " :  "   +  e.message);
+    }
+}
+
+function string2array(name,value){
+    var aa = new Array();
+    var aName = name.split(',');
+    var aValue = value.split(',');
+    for(var i=0;i<aName.length;i++)
+    {
+        if(aName[i]!==""||aValue[i]!==""){
+            aa[i]=[aName[i],Number(aValue[i])];
+        }
+    }
+    return aa;
+}
+$('#historytab a').click(function (e) {
+ e.preventDefault()
+ $(this).tab('show')
+})
+
+function case_pareto(data) {
+        var revenueChart = new FusionCharts({
+            "type": "pareto2d",
+            "renderAt": "paretoCanvas",
+            "dataFormat": "json",
+             //"width": "800",
+             //"height": "400",
+            "dataSource": {
+                "chart": {
+      "theme": "ocean",
+      "caption": "stability module pareto analysis",
+      "subCaption": "History",
+      "xAxisName": "Case",
+      "pYAxisName": "No. of defects",
+      "sYAxisname": "Cumulative Percentage",
+      "showValues": "0",
+      "showXAxisLine": "1",
+      "lineThickness": "2",
+      "lineColor": "#8e0000",
+      "lineAlpha": "80",
+      "lineDashed": "1",
+      "lineDashLen": "5",
+      "lineDashGap": "3",
+
+                },
+                "data": data
+            }
+
+        });
+        revenueChart.render();
+};
+
+jQuery(document).ready(function(){
+   var history_sw ="{{=history_sw}}";
+   var history_color = [];
+   var aColor="{{=history_color}}".split(",");
+   for(var i=0;i<aColor.length;i++)
+   {
+        if(aColor[i]!==""){
+            history_color[i]=aColor[i];
+        }
+   }
+   var history_data ="{{=history_data}}";
+   history_graph(string2array(history_sw,history_data),history_color);
+
+   //case data
+   var data = jQuery.parseJSON('{{=case_report}}'.replace(/&quot;/g,'"'));  //escape is not safe
+   case_graph(data);
+
+   //pareto
+    var testdata = jQuery.parseJSON('{{=pareto}}'.replace(/&#x27;/g,'"'));  //escape is not safe
+    case_pareto(testdata);
+
+});
+
+</script>

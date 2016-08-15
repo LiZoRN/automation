@@ -1,0 +1,886 @@
+(dp1
+S'output'
+p2
+S"<type 'exceptions.ValueError'> invalid literal for long() with base 10: 'adasd'"
+p3
+sS'layer'
+p4
+S'D:\\project\\web\\web2py\\applications\\tatserver\\controllers/default.py'
+p5
+sS'code'
+p6
+S'# -*- coding: utf-8 -*-\n# this file is released under public domain and you can use without limitations\n\n#########################################################################\n## This is a sample controller\n## - index is the default action of any application\n## - user is required for authentication and authorization\n## - download is for downloading files uploaded in the db (does streaming)\n## - api is an example of Hypermedia API support and access control\n#########################################################################\n\ndef index():\n    """\n    example action using the internationalization operator T and flash\n    rendered by views/default/index.html or views/generic.html\n\n    if you need a simple wiki simply replace the two lines below with:\n    return auth.wiki()\n    """\n    response.flash = T("Welcome to web2py!")\n    return dict(message=T(\'Hello World\'))\n\n\ndef new_client():\n    form = SQLFORM(db.client)\n    if form.accepts(request.post_vars,session):\n        session.flash = \'client created ok\'\n        redirect(URL(\'show_clients\'))\n    Message ="New Client"\n    return dict(form=form,message=Message)\n\ndef delete_client():\n    """delete an existing client"""\n    row = db.client[request.args(0)]\n    form = SQLFORM(db.client, row, deletable=True,showid=False)\n    if form.process().accepted:\n        response.flash = \'record delete\'\n        redirect(URL(\'show_clients\'))\n    return dict(form=form)\n\ndef edit_client():\n     """edit an existing client"""\n     this_page = db.client(request.args(0,cast=int)) or redirect(URL(\'index\'))\n     form = SQLFORM(db.client, this_page, deletable=True,showid=False).process(\n         next = URL(\'show_clients\',args=request.args))\n     return dict(form=form)\n\ndef show_clients():\n    list_client = db(db.client).select()\n    return dict(list_client =list_client)\n\ndef show_client():\n    client = db.client(request.args(0,cast=int)) or redirect(URL(\'index\'))\n    return dict(client =client)\n\ndef show_client_status():\n    plans = []\n    testStatus = {"client_name":"lz","testor_name":"lz","status":"running","plan_list":["111","222222"]}\n    list_client = db(db.client).select()\n    for client in list_client:\n        #RPC Function\n        if testStatus["client_name"]==client.name:\n            # myquery = (db.test_client.client_name == testStatus["client_name"])\n            # myset = db(myquery)\n            # if None != myset:\n            #     myset.update(status=testStatus["status"])\n            #     myset.delete()\n            # else:\n            #     pass\n            plans.append(testStatus["plan_list"])\n            db.test_client.update_or_insert(client_name="lz",testor_name="l1z",status="running",plan_list="111,222222")\n    return dict(form = SQLFORM(db.test_client), list_client = db(db.test_client).select())\n\n\n\ndef new_device():\n    form = SQLFORM(db.device)\n    if form.accepts(request.post_vars,session):\n        session.flash = \'client created ok\'\n        redirect(URL(\'show_clients\'))\n    Message ="New Client"\n    return dict(form=form,message=Message)\n\ndef edit_device():\n    """delete an existing client"""\n    row = db.device[request.args(0,cast=int)]\n    form = SQLFORM(db.device, row, deletable=True,showid=False,readonly=False)\n    if form.process().accepted:\n        response.flash = \'record delete\'\n        redirect(URL(\'show_all_devices\'))\n    return dict(form=form)\n\ndef flush_all_devices():\n    list_client = db(db.client).select()\n    devices = {}\n    for client in list_client:\n        try:\n            for device,detail in db_rpc.show_device(client.url).items():\n                device_id = device+"_"+detail["product"]\n                # raw = db(db.device.name==device_id).select().first()\n                # if None != raw:\n                #     pass\n                db.device.update_or_insert(name = device_id,display_id = detail["display_id"],\n                                           build_date = detail["build_date"],product = detail["product"],\n                                           region = detail["region"],hardware = detail["hardware"],\n                                           build_type = detail["build_type"],host_name = client.id)\n        except:\n            continue\n    redirect(URL(\'show_all_devices\'))\n    Message ="Flush all devices Success!"\n    return dict(message=Message)\n\ndef show_all_devices():\n    list_devices = db(db.device).select()\n    return dict(list_device =list_devices)\n\ndef show_device_status():\n    list_devices = db(db.device_status).select()\n    return dict(list_devices =list_devices)\n\ndef show_device():\n    list_device = db(db.device.host_name==request.args[0]).select()\n    if None == list_device:\n        raise HTTP(400, "<h1>Record not finded,may deleted by others.<a href=\\"%s\\"><br/>Go back homepage</h1>"%(URL("index")))\n    return dict(list_device = list_device)\n\ndef device_cfg():\n    return dict(device = db.device[request.args(0,cast=int)])\n\n\ndef del_device():\n\n    return dict()\n\n\n\ndef new_plan():\n    # a = ["b","aaa","ccc"]\n    #\n    # pj_dict = {"Alto5":{"v3H20":{"ZZ":"x3h2zz00bg00","ZZ":"x3h21230bg00"}},"Alto4":{"vasdH20":{"ZZ":"x3h2zz00bg00","ZZ":"x3h21230bg00"}}}\n    #\n    #\n    # project_form = FORM(TABLE(\n    #     TR(\'project:\', INPUT(_type=\'text\', _name=\'name\',requires=IS_NOT_EMPTY())),\n    #     TR(\'Your email:\', INPUT(_type=\'text\', _name=\'email\',requires=IS_EMAIL())),\n    #     TR(\'Admin\', INPUT(_type=\'checkbox\', _name=\'admin\')),\n    #     TR(\'persos\', SELECT(a, _name=\'sure\',\n    #                         onChange="getpersom(this.value)",align=\'top\',requires=IS_IN_SET([\'yes\', \'no\']))),\n    #     TR(\'persos_m\', SELECT(a, _name=\'persos_m\',hidden=True)),\n    # ))\n    # plan_form = FORM(TABLE(\n    #     TR(\'project:\', INPUT(_type=\'text\', _name=\'name\',requires=IS_NOT_EMPTY())),\n    #     TR(\'Test Type:\', INPUT(_type=\'text\', _name=\'test_type\',requires=IS_NOT_EMPTY())),\n    #     TR(\'TestScript Branch:\', INPUT(_type=\'text\', _name=\'scrip_branch\',requires=IS_NOT_EMPTY())),\n    #     TR(\'TestScript Tag:\', INPUT(_type=\'text\', _name=\'scrip_tag\',requires=IS_NOT_EMPTY())),\n    #     TR(\'tool:\', INPUT(_type=\'text\', _name=\'tool\',requires=IS_EMAIL())),\n    #     TR(\'begin time\', INPUT(__type=\'date\', _name=\'begin_time\',requires=IS_TIME())),\n    #     TR(\'client_name\', SELECT(a, _name=\'sure\',\n    #                         onChange="getpersom(this.value)",align=\'top\',requires=IS_IN_SET([\'yes\', \'no\']))),\n    #     TR(\'\', INPUT(_type=\'submit\', _value=\'SUBMIT\')),\n    # ))\n    # db.tool.update_or_insert(tool_version = 1.0)\n    # plan_form1 = SQLFORM(db.test_plan)\n    # if plan_form1.process().accepted:\n    #     response.flash = \'record inserted\'\n    # return dict(project_form = project_form,plan_form = plan_form1,pj_dict = pj_dict)\n    db.tool.update_or_insert(tool_version = 1.0)\n    plan_form = SQLFORM(db.test_plan,fields=[\'plan_name\', \'TestScript_Branch\',\'Tool\', \'test_devices\',"begin_time"])\n    if plan_form.process().accepted:\n        dbfile.gen_plan(db.test_plan(plan_name = request.vars.plan_name))\n        for d in plan_form.vars.test_devices:\n            device = db(db.device.id==d).select().first()\n            url = device.host_name.url\n        response.flash = \'record inserted\'\n        redirect(URL(\'show_plan\'))\n    return dict(plan_form = plan_form)\n\nimport time\ndef start_plan():\n    """delete an existing client"""\n    row = db.test_plan[request.args(0,cast=int)]\n    if None == row:\n        raise HTTP(400, "<h1>Record not finded,may deleted by others.<a href=\\"%s\\"><br/>Go back homepage</h1>"%(URL("show_plan")))\n    row.update_record(status = "Running",begin_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))\n    message = "Test Plan Start"\n    redirect(URL(\'show_plan\'))\n    return dict(message=message)\n\ndef stop_plan():\n    """delete an existing client"""\n    row = db.test_plan[request.args(0,cast=int)]\n    if None == row:\n        raise HTTP(400, "<h1>Record not finded,may deleted by others.<a href=\\"%s\\"><br/>Go back homepage</h1>"%(URL("show_plan")))\n    if row.status != "Running":\n        message = "Test Plan IsStoped"\n        redirect(URL(\'show_plan\'))\n    row.update_record(status = "Stop")\n    message = "Test Plan Stop"\n    redirect(URL(\'show_plan\'))\n    return dict(message=message)\n\ndef edit_plan():\n    """delete an existing client"""\n    row = db.test_plan[request.args(0,cast=int)]\n    form = SQLFORM(db.test_plan, row, deletable=True,showid=False,readonly=False,fields=[\'plan_name\', \'TestScript_Branch\',\'Tool\', \'test_devices\',"begin_time"])\n    if form.process().accepted:\n        response.flash = \'record delete\'\n        redirect(URL(\'show_plan\'))\n    return dict(form=form)\n\ndef get_report():\n    return "success"\n\ndef display():\n    form = SQLFORM(db.test_plan)\n    return dict(form = form)\n\ndef show_plan():\n    return dict(list_plan= db(db.test_plan).select())\n\ndef show_all_plan():\n    return dict(list_plan= db(db.test_plan).select())\n\ndef show_all_report():\n    from applications.TATServer.modules.testdata import xml2dict\n    report = {}\n    list_client = db(db.client).select()\n    for client in list_client:\n        report[client.name] = {}\n        try:\n            for device,test_data in db_rpc.show_all_report(client.url).items():\n                report[client.name].update({device:xml2dict(test_data)})\n        except:\n            continue\n    return dict(list_client =list_client ,report = report)\n\ndef show_report_bak():\n    list_device = []\n    report = {}\n    data = []\n    from testdata import TestData,time_2_second,second_2_time\n    import codecs\n    for id in request.args:\n        plan = db.test_plan[id]\n        for device_id in plan.test_devices:\n            devices = db.device[device_id]\n                # db(db.device.id==device_id).select().first()\n            list_device.append(devices)\n    def _get_report(list_device):\n        url = list_device[0].host_name.url\n        for device,test_data in db_rpc.show_all_report(url).items():\n            report[device] = {}\n            total_runtime = 0\n            cases = TestData(test_data).parse_data()\n            for case,value in cases.items():\n                total_runtime += time_2_second(value["runtime"])\n            report[device]["status"]=cases\n            report[device]["runtime"]= second_2_time(total_runtime)\n            report[device]["sw"] = db(db.device.name==device).select().first().build_date\n        list_device = filter(lambda x:list_device[0].host_name!=x.host_name, list_device)\n        if list_device!=[]:\n            _get_report(list_device)\n    _get_report(list_device)\n    return dict(list_status =report,plan_name = plan)\n\ndef show_report11():\n    list_device = []\n    report = {}\n    data = []\n    from testdata import TestData,time_2_second,second_2_time\n    import codecs\n    for id in request.args:\n        plan = db.test_plan[id]\n        for device_id in plan.test_devices:\n            devices = db(db.device.id==device_id).select().first()\n            # devices =  db.client(id)\n            url = devices.host_name.url\n            for device,test_data in db_rpc.show_all_report(url).items():\n                if (device == devices.name):\n                    report[devices.name] = {}\n                    total_runtime = 0\n                    cases = TestData(test_data).parse_data()\n                    for case,value in cases.items():\n                        total_runtime += time_2_second(value["runtime"])\n                    report[device]["status"]=cases\n                    report[device]["runtime"]= second_2_time(total_runtime)\n                    report[device]["sw"] = devices.build_date\n                    f = codecs.open(\'bb.xml\', \'wb\', \'utf-8\')\n                    f.write(test_data)\n                    f.close()\n    return dict(list_status =report,plan_name = plan)\n\ndef _dict2db(name,time,report):\n    db.report.update_or_insert(plan_name=name,begin_time=time)\n    raw = db((db.report.plan_name==name)&(db.report.begin_time==time)).select().first()\n    if None == raw:\n        raise HTTP(400, "<h1>Record not finded,may deleted by others.<a href=\\"%s\\"><br/>Go back homepage</h1>"%(URL("show_plan")))\n    for d,status in report.items():\n        raw.update_record(device = d,sw = status["sw"],mtbf = status[\'runtime\'])\n        for name in sorted(status[\'status\'].keys()):\n            db.report_status.update_or_insert(report_id = raw.id,case = name.split("_")[-1],passrate = status[\'status\'][name]["passrate"] ,looptime = status[\'status\'][name]["avgtime"])\n\ndef show_report():\n    list_device = []\n    report = {}\n    from testdata import TestData,time_2_second,second_2_time\n    for id in request.args:\n        plan = db.test_plan[id]\n        #1. access db file report\n        data = dbfile.get_report(plan.plan_name,plan.begin_time)\n        print data\n        #2. RPC file report\n        for device_id in plan.test_devices:\n            devices = db(db.device.id==device_id).select().first()\n            if None == devices:\n\n                raise HTTP(400, "<h1>Record not finded,may deleted by others.<a href=\\"%s\\"><br/>Go back homepage|<a href=\\"%s\\">Edit Test Plan</h1>"%(URL("index"),(URL("index"))))\n            # devices =  db.client(id)\n            url = devices.host_name.url\n            try:\n                for device,test_data in db_rpc.show_report_by_device(url,devices.name).items():\n                    report[devices.name] = {}\n                    total_runtime = 0\n                    cases = TestData(test_data).parse_data()\n                    for case,value in cases.items():\n                        total_runtime += time_2_second(value["runtime"])\n                    report[device]["status"]=cases\n                    report[device]["runtime"]= second_2_time(total_runtime)\n                    report[device]["sw"] = devices.build_date\n                    dbfile.store_report(plan.plan_name,plan.begin_time,device,test_data)\n            except:\n                continue\n    return dict(list_status =report,plan = plan)\n\ndef show_all_report():\n    all_report = {}\n    from testdata import TestData,time_2_second,second_2_time\n    import codecs\n    for row in db().select(db.test_plan.ALL):\n        report = {}\n        for device_id in row.test_devices:\n            devices = db(db.device.id==device_id).select().first()\n            # devices =  db.client(id)\n            url = devices.host_name.url\n            for device,test_data in db_rpc.show_report_by_device(url,devices.name).items():\n                report[devices.name] = {}\n                total_runtime = 0\n                cases = TestData(test_data).parse_data()\n                for case,value in cases.items():\n                    total_runtime += time_2_second(value["runtime"])\n                report[device]["status"]=cases\n                report[device]["runtime"]= second_2_time(total_runtime)\n                report[device]["sw"] = devices.build_date\n                dbfile.store_report(row.plan_name,row.begin_time,test_data)\n        all_report[row.plan_name] = report\n    if report == {}:\n        raise HTTP(400, "<h1>No test plan exist!<a href=\\"%s\\"><br/>Go back homepage</h1>"%(URL("index")))\n    return dict(all_report =all_report)\n\ndef user():\n    """\n    exposes:\n    http://..../[app]/default/user/login\n    http://..../[app]/default/user/logout\n    http://..../[app]/default/user/register\n    http://..../[app]/default/user/profile\n    http://..../[app]/default/user/retrieve_password\n    http://..../[app]/default/user/change_password\n    http://..../[app]/default/user/manage_users (requires membership in\n    use @auth.requires_login()\n        @auth.requires_membership(\'group name\')\n        @auth.requires_permission(\'read\',\'table name\',record_id)\n    to decorate functions that need access control\n    """\n    return dict(form=auth())\n\n\n@cache.action()\ndef download():\n    """\n    allows downloading of uploaded files\n    http://..../[app]/default/download/[filename]\n    """\n    return response.download(request, db)\n\n\ndef call():\n    """\n    exposes services. for example:\n    http://..../[app]/default/call/jsonrpc\n    decorate with @services.jsonrpc the functions to expose\n    supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv\n    """\n    return service()\n\n\n@auth.requires_login() \ndef api():\n    """\n    this is example of API with access control\n    WEB2PY provides Hypermedia API (Collection+JSON) Experimental\n    """\n    from gluon.contrib.hypermedia import Collection\n    rules = {\n        \'<tablename>\': {\'GET\':{},\'POST\':{},\'PUT\':{},\'DELETE\':{}},\n        }\n    return Collection(db).process(request,response,rules)\n\nresponse._vars=response._caller(show_plan)\n'
+p7
+sS'snapshot'
+p8
+(dp9
+S'exception'
+p10
+(dp11
+S'__hash__'
+p12
+S"<method-wrapper '__hash__' of exceptions.ValueError object>"
+p13
+sS'__setattr__'
+p14
+S"<method-wrapper '__setattr__' of exceptions.ValueError object>"
+p15
+sS'__reduce_ex__'
+p16
+S'<built-in method __reduce_ex__ of exceptions.ValueError object>'
+p17
+sS'__getslice__'
+p18
+S"<method-wrapper '__getslice__' of exceptions.ValueError object>"
+p19
+sS'__getitem__'
+p20
+S"<method-wrapper '__getitem__' of exceptions.ValueError object>"
+p21
+sS'__setstate__'
+p22
+S'<built-in method __setstate__ of exceptions.ValueError object>'
+p23
+sS'__reduce__'
+p24
+S'<built-in method __reduce__ of exceptions.ValueError object>'
+p25
+sS'__str__'
+p26
+S"<method-wrapper '__str__' of exceptions.ValueError object>"
+p27
+sS'__format__'
+p28
+S'<built-in method __format__ of exceptions.ValueError object>'
+p29
+sS'__getattribute__'
+p30
+S"<method-wrapper '__getattribute__' of exceptions.ValueError object>"
+p31
+sS'__class__'
+p32
+S"<type 'exceptions.ValueError'>"
+p33
+sS'__unicode__'
+p34
+S'<built-in method __unicode__ of exceptions.ValueError object>'
+p35
+sS'__delattr__'
+p36
+S"<method-wrapper '__delattr__' of exceptions.ValueError object>"
+p37
+sS'__subclasshook__'
+p38
+S'<built-in method __subclasshook__ of type object>'
+p39
+sS'__repr__'
+p40
+S"<method-wrapper '__repr__' of exceptions.ValueError object>"
+p41
+sS'args'
+p42
+S'("invalid literal for long() with base 10: \'adasd\'",)'
+p43
+sS'__dict__'
+p44
+S'{}'
+p45
+sS'__sizeof__'
+p46
+S'<built-in method __sizeof__ of exceptions.ValueError object>'
+p47
+sS'__doc__'
+p48
+S"'Inappropriate argument value (of correct type).'"
+p49
+sS'__init__'
+p50
+S"<method-wrapper '__init__' of exceptions.ValueError object>"
+p51
+sS'__new__'
+p52
+S'<built-in method __new__ of type object>'
+p53
+ssS'evalue'
+p54
+S"invalid literal for long() with base 10: 'adasd'"
+p55
+sS'request'
+p56
+cgluon.html
+XML_unpickle
+p57
+(S's\xbe]\x00\x00<div><table><tr><td style="font-weight:bold;vertical-align:top;">ajax</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">application</td><td style="vertical-align:top;">:</td><td><div>tatserver</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">args</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cid</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">client</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">controller</td><td style="vertical-align:top;">:</td><td><div>default</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cookies</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">session_id_admin</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1-671f0f2d-2a70-4007-b08c-2fc19a4bdeef<table><tr><td style="font-weight:bold;vertical-align:top;">comment</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">domain</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">expires</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">httponly</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">max-age</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">secure</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">version</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_id_tatserver</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1-9086f068-608f-4da8-91bd-a9e39450588a<table><tr><td style="font-weight:bold;vertical-align:top;">comment</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">domain</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">expires</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">httponly</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">max-age</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">secure</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">version</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_id_welcome</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1-ec9a0f6c-d4f8-420c-8ab2-fd61a2eadf67<table><tr><td style="font-weight:bold;vertical-align:top;">comment</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">domain</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">expires</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">httponly</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">max-age</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">secure</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">version</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">env</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">HTTP_ACCEPT</td><td style="vertical-align:top;">:</td><td><div>text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_ACCEPT_ENCODING</td><td style="vertical-align:top;">:</td><td><div>gzip,deflate,sdch</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_ACCEPT_LANGUAGE</td><td style="vertical-align:top;">:</td><td><div>zh-CN,zh;q=0.8</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_CACHE_CONTROL</td><td style="vertical-align:top;">:</td><td><div>max-age=0</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_CONNECTION</td><td style="vertical-align:top;">:</td><td><div>keep-alive</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_COOKIE</td><td style="vertical-align:top;">:</td><td><div>session_id_welcome=127.0.0.1-ec9a0f6c-d4f8-420c-8ab2-fd61a2eadf67; session_id_tatserver=127.0.0.1-9086f068-608f-4da8-91bd-a9e39450588a; session_id_admin=127.0.0.1-671f0f2d-2a70-4007-b08c-2fc19a4bdeef</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_HOST</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1:8000</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_REFERER</td><td style="vertical-align:top;">:</td><td><div>http://127.0.0.1:8000/tatserver/default/edit_plan/4</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_USER_AGENT</td><td style="vertical-align:top;">:</td><td><div>Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36 SE 2.X MetaSr 1.0</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">PATH_INFO</td><td style="vertical-align:top;">:</td><td><div>/tatserver/default/show_plan</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">QUERY_STRING</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">REMOTE_ADDR</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">REMOTE_PORT</td><td style="vertical-align:top;">:</td><td><div>3973</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">REQUEST_METHOD</td><td style="vertical-align:top;">:</td><td><div>GET</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SCRIPT_NAME</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_NAME</td><td style="vertical-align:top;">:</td><td><div>50419-0</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_PORT</td><td style="vertical-align:top;">:</td><td><div>8000</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_PROTOCOL</td><td style="vertical-align:top;">:</td><td><div>HTTP/1.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_SOFTWARE</td><td style="vertical-align:top;">:</td><td><div>Rocket 1.2.6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">app_folders</td><td style="vertical-align:top;">:</td><td><div>set([&#x27;D:\\\\project\\\\web\\\\web2py\\\\applications\\\\welcome\\\\&#x27;, &#x27;D:\\\\project\\\\web\\\\web2py\\\\applications\\\\tatserver\\\\&#x27;, &#x27;D:\\\\project\\\\web\\\\web2py\\\\applications\\\\admin\\\\&#x27;])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">applications_parent</td><td style="vertical-align:top;">:</td><td><div>D:\\project\\web\\web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cmd_args</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cmd_options</td><td style="vertical-align:top;">:</td><td><div>&lt;Values at 0x297fd28: {&#x27;verbose&#x27;: False, &#x27;ip&#x27;: &#x27;127.0.0.1&#x27;, &#x27;debuglevel&#x27;: 30, &#x27;with_scheduler&#x27;: False, &#x27;ips&#x27;: [&#x27;fe80::c552:3240:c7e2:7bbe%13&#x27;, &#x27;172.16.44.222&#x27;], &#x27;shutdown_timeout&#x27;: 5, &#x27;taskbar&#x27;: False, &#x27;with_coverage&#x27;: False, &#x27;scheduler_groups&#x27;: None, &#x27;port&#x27;: 8000, &#x27;maxthreads&#x27;: None, &#x27;softcron&#x27;: False, &#x27;server_name&#x27;: &#x27;50419-0&#x27;, &#x27;bpython&#x27;: False, &#x27;nogui&#x27;: False, &#x27;pid_filename&#x27;: &#x27;httpserver.pid&#x27;, &#x27;extcron&#x27;: False, &#x27;runcron&#x27;: False, &#x27;run_system_tests&#x27;: False, &#x27;test&#x27;: None, &#x27;folder&#x27;: &#x27;D:\\\\project\\\\web\\\\web2py&#x27;, &#x27;config&#x27;: &#x27;&#x27;, &#x27;minthreads&#x27;: None, &#x27;shell&#x27;: None, &#x27;run&#x27;: &#x27;&#x27;, &#x27;log_filename&#x27;: &#x27;httpserver.log&#x27;, &#x27;profiler_dir&#x27;: None, &#x27;args&#x27;: [&#x27;&#x27;], &#x27;socket_timeout&#x27;: 5, &#x27;ssl_ca_certificate&#x27;: None, &#x27;scheduler&#x27;: None, &#x27;interfaces&#x27;: None, &#x27;ssl_private_key&#x27;: &#x27;&#x27;, &#x27;gae&#x27;: None, &#x27;password&#x27;: &#x27;&lt;ask&gt;&#x27;, &#x27;request_queue_size&#x27;: 5, &#x27;ssl_certificate&#x27;: &#x27;&#x27;, &#x27;cronjob&#x27;: False, &#x27;numthreads&#x27;: None, &#x27;quiet&#x27;: False, &#x27;import_models&#x27;: False, &#x27;timeout&#x27;: 10, &#x27;plain&#x27;: False, &#x27;nobanner&#x27;: False}&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">db_sessions</td><td style="vertical-align:top;">:</td><td><div>set([])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">debugging</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">gluon_parent</td><td style="vertical-align:top;">:</td><td><div>D:\\project\\web\\web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_accept</td><td style="vertical-align:top;">:</td><td><div>text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_accept_encoding</td><td style="vertical-align:top;">:</td><td><div>gzip,deflate,sdch</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_accept_language</td><td style="vertical-align:top;">:</td><td><div>zh-CN,zh;q=0.8</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_cache_control</td><td style="vertical-align:top;">:</td><td><div>max-age=0</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_connection</td><td style="vertical-align:top;">:</td><td><div>keep-alive</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_cookie</td><td style="vertical-align:top;">:</td><td><div>session_id_welcome=127.0.0.1-ec9a0f6c-d4f8-420c-8ab2-fd61a2eadf67; session_id_tatserver=127.0.0.1-9086f068-608f-4da8-91bd-a9e39450588a; session_id_admin=127.0.0.1-671f0f2d-2a70-4007-b08c-2fc19a4bdeef</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_host</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1:8000</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_referer</td><td style="vertical-align:top;">:</td><td><div>http://127.0.0.1:8000/tatserver/default/edit_plan/4</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_user_agent</td><td style="vertical-align:top;">:</td><td><div>Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36 SE 2.X MetaSr 1.0</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_jython</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_pypy</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_source</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">local_hosts</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>50419-0.sagemwireless</div></td></tr><tr><td><div>::ffff:127.0.0.1</div></td></tr><tr><td><div>::1</div></td></tr><tr><td><div>50419-0</div></td></tr><tr><td><div>fe80::c552:3240:c7e2:7bbe%13</div></td></tr><tr><td><div>172.16.44.222</div></td></tr><tr><td><div>127.0.0.1</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path_info</td><td style="vertical-align:top;">:</td><td><div>/tatserver/default/show_plan</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">query_string</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">remote_addr</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">remote_port</td><td style="vertical-align:top;">:</td><td><div>3973</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">request_method</td><td style="vertical-align:top;">:</td><td><div>GET</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">request_uri</td><td style="vertical-align:top;">:</td><td><div>/tatserver/default/show_plan</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">script_name</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_name</td><td style="vertical-align:top;">:</td><td><div>50419-0</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_port</td><td style="vertical-align:top;">:</td><td><div>8000</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_protocol</td><td style="vertical-align:top;">:</td><td><div>HTTP/1.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_software</td><td style="vertical-align:top;">:</td><td><div>Rocket 1.2.6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">web2py_path</td><td style="vertical-align:top;">:</td><td><div>D:\\project\\web\\web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">web2py_version</td><td style="vertical-align:top;">:</td><td><div>2.9.11-stable+timestamp.2014.09.15.23.35.11</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.errors</td><td style="vertical-align:top;">:</td><td><div>&lt;open file &#x27;&lt;stderr&gt;&#x27;, mode &#x27;w&#x27; at 0x0154D0D0&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.file_wrapper</td><td style="vertical-align:top;">:</td><td><div>&lt;class wsgiref.util.FileWrapper at 0x029323E8&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.input</td><td style="vertical-align:top;">:</td><td><div>&lt;socket._fileobject object at 0x0CB51BF0&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.multiprocess</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.multithread</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.run_once</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.url_scheme</td><td style="vertical-align:top;">:</td><td><div>http</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.version</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>1</div></td></tr><tr><td><div>0</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_errors</td><td style="vertical-align:top;">:</td><td><div>&lt;open file &#x27;&lt;stderr&gt;&#x27;, mode &#x27;w&#x27; at 0x0154D0D0&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_file_wrapper</td><td style="vertical-align:top;">:</td><td><div>&lt;class wsgiref.util.FileWrapper at 0x029323E8&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_input</td><td style="vertical-align:top;">:</td><td><div>&lt;socket._fileobject object at 0x0CB51BF0&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_multiprocess</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_multithread</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_run_once</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_url_scheme</td><td style="vertical-align:top;">:</td><td><div>http</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_version</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>1</div></td></tr><tr><td><div>0</div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">extension</td><td style="vertical-align:top;">:</td><td><div>html</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">folder</td><td style="vertical-align:top;">:</td><td><div>D:\\project\\web\\web2py\\applications\\tatserver\\</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">function</td><td style="vertical-align:top;">:</td><td><div>show_plan</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">global_settings</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">app_folders</td><td style="vertical-align:top;">:</td><td><div>set([&#x27;D:\\\\project\\\\web\\\\web2py\\\\applications\\\\welcome\\\\&#x27;, &#x27;D:\\\\project\\\\web\\\\web2py\\\\applications\\\\tatserver\\\\&#x27;, &#x27;D:\\\\project\\\\web\\\\web2py\\\\applications\\\\admin\\\\&#x27;])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">applications_parent</td><td style="vertical-align:top;">:</td><td><div>D:\\project\\web\\web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cmd_args</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cmd_options</td><td style="vertical-align:top;">:</td><td><div>&lt;Values at 0x297fd28: {&#x27;verbose&#x27;: False, &#x27;ip&#x27;: &#x27;127.0.0.1&#x27;, &#x27;debuglevel&#x27;: 30, &#x27;with_scheduler&#x27;: False, &#x27;ips&#x27;: [&#x27;fe80::c552:3240:c7e2:7bbe%13&#x27;, &#x27;172.16.44.222&#x27;], &#x27;shutdown_timeout&#x27;: 5, &#x27;taskbar&#x27;: False, &#x27;with_coverage&#x27;: False, &#x27;scheduler_groups&#x27;: None, &#x27;port&#x27;: 8000, &#x27;maxthreads&#x27;: None, &#x27;softcron&#x27;: False, &#x27;server_name&#x27;: &#x27;50419-0&#x27;, &#x27;bpython&#x27;: False, &#x27;nogui&#x27;: False, &#x27;pid_filename&#x27;: &#x27;httpserver.pid&#x27;, &#x27;extcron&#x27;: False, &#x27;runcron&#x27;: False, &#x27;run_system_tests&#x27;: False, &#x27;test&#x27;: None, &#x27;folder&#x27;: &#x27;D:\\\\project\\\\web\\\\web2py&#x27;, &#x27;config&#x27;: &#x27;&#x27;, &#x27;minthreads&#x27;: None, &#x27;shell&#x27;: None, &#x27;run&#x27;: &#x27;&#x27;, &#x27;log_filename&#x27;: &#x27;httpserver.log&#x27;, &#x27;profiler_dir&#x27;: None, &#x27;args&#x27;: [&#x27;&#x27;], &#x27;socket_timeout&#x27;: 5, &#x27;ssl_ca_certificate&#x27;: None, &#x27;scheduler&#x27;: None, &#x27;interfaces&#x27;: None, &#x27;ssl_private_key&#x27;: &#x27;&#x27;, &#x27;gae&#x27;: None, &#x27;password&#x27;: &#x27;&lt;ask&gt;&#x27;, &#x27;request_queue_size&#x27;: 5, &#x27;ssl_certificate&#x27;: &#x27;&#x27;, &#x27;cronjob&#x27;: False, &#x27;numthreads&#x27;: None, &#x27;quiet&#x27;: False, &#x27;import_models&#x27;: False, &#x27;timeout&#x27;: 10, &#x27;plain&#x27;: False, &#x27;nobanner&#x27;: False}&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">db_sessions</td><td style="vertical-align:top;">:</td><td><div>set([])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">debugging</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">gluon_parent</td><td style="vertical-align:top;">:</td><td><div>D:\\project\\web\\web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_jython</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_pypy</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_source</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">local_hosts</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>50419-0.sagemwireless</div></td></tr><tr><td><div>::ffff:127.0.0.1</div></td></tr><tr><td><div>::1</div></td></tr><tr><td><div>50419-0</div></td></tr><tr><td><div>fe80::c552:3240:c7e2:7bbe%13</div></td></tr><tr><td><div>172.16.44.222</div></td></tr><tr><td><div>127.0.0.1</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">web2py_version</td><td style="vertical-align:top;">:</td><td><div>2.9.11-stable+timestamp.2014.09.15.23.35.11</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_https</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_local</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_restful</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_sheduler</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_shell</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">now</td><td style="vertical-align:top;">:</td><td><div>datetime.datetime(2014, 10, 27, 12, 29, 12, 467000)</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">raw_args</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">raw_extension</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">url</td><td style="vertical-align:top;">:</td><td><div>/tatserver/default/show_plan</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">utcnow</td><td style="vertical-align:top;">:</td><td><div>datetime.datetime(2014, 10, 27, 4, 29, 12, 467000)</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">uuid</td><td style="vertical-align:top;">:</td><td><div>tatserver/127.0.0.1.2014-10-27.12-29-12.32dccb1e-3565-4e5c-8fe2-11fd7c7f0e36</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi</td><td style="vertical-align:top;">:</td><td><div>&lt;gluon.main.LazyWSGI object at 0x0C619350&gt;</div></td></tr></table></div>'
+tRp58
+sS'frames'
+p59
+(lp60
+(dp61
+S'file'
+p62
+S'D:\\project\\web\\web2py\\gluon\\restricted.py'
+p63
+sS'dump'
+p64
+(dp65
+S'environment'
+p66
+S"{'A': <class 'gluon.html.A'>, 'ANY_OF': <class 'gluon.validators.ANY_OF'>, 'ASSIGNJS': <function ASSIGNJS>, 'Auth': <class 'gluon.tools.Auth'>, 'B': <class 'gluon.html.B'>, 'BEAUTIFY': <class 'gluon.html.BEAUTIFY'>, 'BODY': <class 'gluon.html.BODY'>, 'BR': <class 'gluon.html.BR'>, 'BUTTON': <class 'gluon.html.BUTTON'>, 'CAT': <class 'gluon.html.CAT'>, ...}"
+p67
+sS'ccode'
+p68
+S'<code object <module> at 0C5E2260, file "D:\\proj...tions\\tatserver\\controllers/default.py", line 12>'
+p69
+ssS'lnum'
+p70
+I224
+sS'lines'
+p71
+(dp72
+I224
+S'        exec ccode in environment'
+p73
+sI225
+S'    except HTTP:'
+p74
+sI226
+S'        raise'
+p75
+sI227
+S'    except RestrictedError:'
+p76
+sI228
+S'        # do not encapsulate (obfuscate) the original RestrictedError'
+p77
+sI219
+S'    try:'
+p78
+sI220
+S'        if isinstance(code, types.CodeType):'
+p79
+sI221
+S'            ccode = code'
+p80
+sI222
+S'        else:'
+p81
+sI223
+S'            ccode = compile2(code, layer)'
+p82
+ssS'call'
+p83
+S"(code='# -*- coding: utf-8 -*-\\n# this file is released ...les)\\n\\nresponse._vars=response._caller(show_plan)\\n', environment={'A': <class 'gluon.html.A'>, 'ANY_OF': <class 'gluon.validators.ANY_OF'>, 'ASSIGNJS': <function ASSIGNJS>, 'Auth': <class 'gluon.tools.Auth'>, 'B': <class 'gluon.html.B'>, 'BEAUTIFY': <class 'gluon.html.BEAUTIFY'>, 'BODY': <class 'gluon.html.BODY'>, 'BR': <class 'gluon.html.BR'>, 'BUTTON': <class 'gluon.html.BUTTON'>, 'CAT': <class 'gluon.html.CAT'>, ...}, layer=r'D:\\project\\web\\web2py\\applications\\tatserver\\controllers/default.py')"
+p84
+sS'func'
+p85
+S'restricted'
+p86
+sa(dp87
+g62
+S'D:\\project\\web\\web2py\\applications\\tatserver\\controllers\\default.py'
+p88
+sg64
+(dp89
+sg70
+I409
+sg71
+(dp90
+I398
+S'def api():'
+p91
+sI399
+S'    """'
+p92
+sI400
+S'    this is example of API with access control'
+p93
+sI401
+S'    WEB2PY provides Hypermedia API (Collection+JSON) Experimental'
+p94
+sI402
+S'    """'
+p95
+sI403
+S'    from gluon.contrib.hypermedia import Collection'
+p96
+sI404
+S'    rules = {'
+p97
+sI405
+S"        '<tablename>': {'GET':{},'POST':{},'PUT':{},'DELETE':{}},"
+p98
+sI406
+S'        }'
+p99
+sI407
+S'    return Collection(db).process(request,response,rules)'
+p100
+ssg83
+S'()'
+p101
+sg85
+S'<module>'
+p102
+sa(dp103
+g62
+S'D:\\project\\web\\web2py\\gluon\\globals.py'
+p104
+sg64
+(dp105
+S'self'
+p106
+S'undefined'
+p107
+sS'f'
+S'<function show_plan>'
+p108
+ssg70
+I392
+sg71
+(dp109
+I387
+S"        self.flash = ''            # used by the default view layout"
+p110
+sI388
+S'        self.meta = Storage()      # used by web2py_ajax.html'
+p111
+sI389
+S'        self.menu = []             # used by the default view layout'
+p112
+sI390
+S'        self.files = []            # used by web2py_ajax.html'
+p113
+sI391
+S'        self._vars = None'
+p114
+sI392
+S'        self._caller = lambda f: f()'
+p115
+sI393
+S'        self._view_environment = None'
+p116
+sI394
+S'        self._custom_commit = None'
+p117
+sI395
+S'        self._custom_rollback = None'
+p118
+sI396
+S"        self.generic_patterns = ['*']"
+p119
+ssg83
+S'(f=<function show_plan>)'
+p120
+sg85
+S'<lambda>'
+p121
+sa(dp122
+g62
+S'D:\\project\\web\\web2py\\applications\\tatserver\\controllers\\default.py'
+p123
+sg64
+(dp124
+S'global db'
+p125
+S'<DAL uri="sqlite://storage.sqlite">'
+p126
+sS'db.test_plan'
+p127
+S'<Table test_plan (id,plan_name,TestScript_Branch...l,test_devices,status,begin_time,test_operation)>'
+p128
+sS').select'
+p129
+g107
+sS'builtindict'
+p130
+S"<type 'dict'>"
+p131
+sS'list_plan'
+p132
+g107
+ssg70
+I219
+sg71
+(dp133
+I214
+S'def display():'
+p134
+sI215
+S'    form = SQLFORM(db.test_plan)'
+p135
+sI216
+S'    return dict(form = form)'
+p136
+sI217
+S''
+sI218
+S'def show_plan():'
+p137
+sI219
+S'    return dict(list_plan= db(db.test_plan).select())'
+p138
+sI220
+S''
+sI221
+S'def show_all_plan():'
+p139
+sI222
+S'    return dict(list_plan= db(db.test_plan).select())'
+p140
+sI223
+S''
+ssg83
+S'()'
+p141
+sg85
+S'show_plan'
+p142
+sa(dp143
+g62
+S'D:\\project\\web\\web2py\\gluon\\dal.py'
+p144
+sg64
+(dp145
+S'self.query'
+p146
+S'<Query (test_plan.id IS NOT NULL)>'
+p147
+sS'adapter.select'
+p148
+S'<bound method SQLiteAdapter.select of <gluon.dal.SQLiteAdapter object>>'
+p149
+sS'fields'
+p150
+S'[<gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>]'
+p151
+sS'adapter'
+p152
+S'<gluon.dal.SQLiteAdapter object>'
+p153
+sS'attributes'
+p154
+g45
+sS'self'
+p155
+S'<Set (test_plan.id IS NOT NULL)>'
+p156
+ssg70
+I10749
+sg71
+(dp157
+I10752
+S'        return Expression(self.db, self._select(*fields, **attributes))'
+p158
+sI10753
+S''
+sI10744
+S"                                    attributes.get('join', None),"
+p159
+sI10745
+S"                                    attributes.get('left', None),"
+p160
+sI10746
+S"                                    attributes.get('orderby', None),"
+p161
+sI10747
+S"                                    attributes.get('groupby', None))"
+p162
+sI10748
+S'        fields = adapter.expand_all(fields, tablenames)'
+p163
+sI10749
+S'        return adapter.select(self.query, fields, attributes)'
+p164
+sI10750
+S''
+sI10751
+S'    def nested_select(self, *fields, **attributes):'
+p165
+ssg83
+S'(self=<Set (test_plan.id IS NOT NULL)>, *fields=[<gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>], **attributes={})'
+p166
+sg85
+S'select'
+p167
+sa(dp168
+g62
+S'D:\\project\\web\\web2py\\gluon\\dal.py'
+p169
+sg64
+(dp170
+S'fields'
+p171
+S'[<gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>]'
+p172
+sS'self'
+p173
+S'<gluon.dal.SQLiteAdapter object>'
+p174
+sS').select'
+p175
+S'<bound method SQLiteAdapter.select of <gluon.dal.SQLiteAdapter object>>'
+p176
+sS'attributes'
+p177
+g45
+sS'global SQLiteAdapter'
+p178
+S"<class 'gluon.dal.SQLiteAdapter'>"
+p179
+sS'query'
+p180
+S'<Query (test_plan.id IS NOT NULL)>'
+p181
+sS'builtinsuper'
+p182
+S"<type 'super'>"
+p183
+ssg70
+I2472
+sg71
+(dp184
+I2467
+S'        Note that the entire database, rather than one record, is locked'
+p185
+sI2468
+S'        (it will be locked eventually anyway by the following UPDATE).'
+p186
+sI2469
+S'        """'
+p187
+sI2470
+S"        if attributes.get('for_update', False) and not 'cache' in attributes:"
+p188
+sI2471
+S"            self.execute('BEGIN IMMEDIATE TRANSACTION;')"
+p189
+sI2472
+S'        return super(SQLiteAdapter, self).select(query, fields, attributes)'
+p190
+sI2473
+S''
+sI2474
+S''
+sI2475
+S'class SpatiaLiteAdapter(SQLiteAdapter):'
+p191
+sI2476
+S"    drivers = ('sqlite3', 'sqlite2')"
+p192
+ssg83
+S'(self=<gluon.dal.SQLiteAdapter object>, query=<Query (test_plan.id IS NOT NULL)>, fields=[<gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>], attributes={})'
+p193
+sg85
+g167
+sa(dp194
+g62
+S'D:\\project\\web\\web2py\\gluon\\dal.py'
+p195
+sg64
+(dp196
+S'fields'
+p197
+S'[<gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>]'
+p198
+sS'self'
+p199
+S'<gluon.dal.SQLiteAdapter object>'
+p200
+sS'attributes'
+p201
+g45
+sS'self._select_aux'
+p202
+S'<bound method SQLiteAdapter._select_aux of <gluon.dal.SQLiteAdapter object>>'
+p203
+sS'sql'
+p204
+S"'SELECT  test_plan.id, test_plan.plan_name, test_... FROM test_plan WHERE (test_plan.id IS NOT NULL);'"
+p205
+ssg70
+I1881
+sg71
+(dp206
+I1876
+S'            return cache_model('
+p207
+sI1877
+S'                key,'
+p208
+sI1878
+S'                lambda self=self, args=args: self._select_aux(*args),'
+p209
+sI1879
+S'                time_expire)'
+p210
+sI1880
+S'        else:'
+p211
+sI1881
+S'            return self._select_aux(sql, fields, attributes)'
+p212
+sI1882
+S''
+sI1883
+S'    def _count(self, query, distinct=None):'
+p213
+sI1884
+S'        tablenames = self.tables(query)'
+p214
+sI1885
+S'        if query:'
+p215
+ssg83
+S'(self=<gluon.dal.SQLiteAdapter object>, query=<Query (test_plan.id IS NOT NULL)>, fields=[<gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>], attributes={})'
+p216
+sg85
+g167
+sa(dp217
+g62
+S'D:\\project\\web\\web2py\\gluon\\dal.py'
+p218
+sg64
+(dp219
+S'rows'
+p220
+S"[(4, u'adas', u'adasd', u'asdas', u'1', u'|13|', u'adasd', u'2014-10-23 15:49:05', u'adsa'), (5, u'asfsafsadfsd', u'sfsafsafsa', u'fsfsfsa', u'1', u'|10|', u'sfsafas', u'2014-10-21 15:56:46', u'fsfsafasfdsa'), (6, u'123456789', u'11', u'11', u'1', u'|10|11|', u'12321', u'2014-10-25 14:41:01', u'1321'), (7, u'asdadas', u'asdsadsa', u'adsdsadsa', u'1', u'|11|', u'asdsa', u'2014-10-14 14:49:12', u'das'), (8, u'aa', u'bb', u'cc', u'1', u'|10|12|', u'sdfs', u'2014-10-21 15:10:15', u'sfd'), (9, u'asda11', u'dsada', u'dasda', u'1', u'|10|11|12|', u'INIT', None, u'INIT')]"
+p221
+sS'fields'
+p222
+S'[<gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>]'
+p223
+sS'self'
+p224
+S'<gluon.dal.SQLiteAdapter object>'
+p225
+sS'cacheable'
+p226
+S'False'
+p227
+sS'self._colnames'
+p228
+S"['test_plan.id', 'test_plan.plan_name', 'test_plan.TestScript_Branch', 'test_plan.TestScript_Tag', 'test_plan.Tool', 'test_plan.test_devices', 'test_plan.status', 'test_plan.begin_time', 'test_plan.test_operation']"
+p229
+sS'processor'
+p230
+S'<bound method SQLiteAdapter.parse of <gluon.dal.SQLiteAdapter object>>'
+p231
+ssg70
+I1862
+sg71
+(dp232
+I1857
+S'            rows = list(rows)'
+p233
+sI1858
+S"        limitby = args_get('limitby', None) or (0, )"
+p234
+sI1859
+S'        rows = self.rowslice(rows, limitby[0], None)'
+p235
+sI1860
+S"        processor = args_get('processor', self.parse)"
+p236
+sI1861
+S"        cacheable = args_get('cacheable', False)"
+p237
+sI1862
+S'        return processor(rows, fields, self._colnames, cacheable=cacheable)'
+p238
+sI1863
+S''
+sI1864
+S'    def select(self, query, fields, attributes):'
+p239
+sI1865
+S'        """'
+p240
+sI1866
+S'        Always returns a Rows object, possibly empty.'
+p241
+ssg83
+S"(self=<gluon.dal.SQLiteAdapter object>, sql='SELECT  test_plan.id, test_plan.plan_name, test_... FROM test_plan WHERE (test_plan.id IS NOT NULL);', fields=[<gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>], attributes={})"
+p242
+sg85
+S'_select_aux'
+p243
+sa(dp244
+g62
+S'D:\\project\\web\\web2py\\gluon\\dal.py'
+p245
+sg64
+(dp246
+S'blob_decode'
+p247
+S'True'
+p248
+sS'self'
+p249
+S'<gluon.dal.SQLiteAdapter object>'
+p250
+sS'ft'
+p251
+S"'list:reference report_status'"
+p252
+sS'value'
+p253
+S"u'adasd'"
+p254
+sS'self.parse_value'
+p255
+S'<bound method SQLiteAdapter.parse_value of <gluon.dal.SQLiteAdapter object>>'
+p256
+ssg70
+I2246
+sg71
+(dp257
+I2241
+S'                    colset = new_row.get(tablename, None)'
+p258
+sI2242
+S'                    if colset is None:'
+p259
+sI2243
+S'                        colset = new_row[tablename] = Row()'
+p260
+sI2244
+S'                        if tablename not in virtualtables:'
+p261
+sI2245
+S'                            virtualtables.append(tablename)'
+p262
+sI2246
+S'                    value = self.parse_value(value, ft, blob_decode)'
+p263
+sI2247
+S'                    if field.filter_out:'
+p264
+sI2248
+S'                        value = field.filter_out(value)'
+p265
+sI2249
+S'                    colset[fieldname] = value'
+p266
+sI2250
+S''
+ssg83
+S"(self=<gluon.dal.SQLiteAdapter object>, rows=[(4, u'adas', u'adasd', u'asdas', u'1', u'|13|', u'adasd', u'2014-10-23 15:49:05', u'adsa'), (5, u'asfsafsadfsd', u'sfsafsafsa', u'fsfsfsa', u'1', u'|10|', u'sfsafas', u'2014-10-21 15:56:46', u'fsfsafasfdsa'), (6, u'123456789', u'11', u'11', u'1', u'|10|11|', u'12321', u'2014-10-25 14:41:01', u'1321'), (7, u'asdadas', u'asdsadsa', u'adsdsadsa', u'1', u'|11|', u'asdsa', u'2014-10-14 14:49:12', u'das'), (8, u'aa', u'bb', u'cc', u'1', u'|10|12|', u'sdfs', u'2014-10-21 15:10:15', u'sfd'), (9, u'asda11', u'dsada', u'dasda', u'1', u'|10|11|12|', u'INIT', None, u'INIT')], fields=[<gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>], colnames=['test_plan.id', 'test_plan.plan_name', 'test_plan.TestScript_Branch', 'test_plan.TestScript_Tag', 'test_plan.Tool', 'test_plan.test_devices', 'test_plan.status', 'test_plan.begin_time', 'test_plan.test_operation'], blob_decode=True, cacheable=False)"
+p267
+sg85
+S'parse'
+p268
+sa(dp269
+g62
+S'D:\\project\\web\\web2py\\gluon\\dal.py'
+p270
+sg64
+(dp271
+S'field_type'
+p272
+S"'list:reference report_status'"
+p273
+sS'self'
+p274
+S'<gluon.dal.SQLiteAdapter object>'
+p275
+sS'self.parsemap'
+p276
+S"{'bigint': <bound method SQLiteAdapter.parse_integer of <gluon.dal.SQLiteAdapter object>>, 'blob': <bound method SQLiteAdapter.parse_blob of <gluon.dal.SQLiteAdapter object>>, 'boolean': <bound method SQLiteAdapter.parse_boolean of <gluon.dal.SQLiteAdapter object>>, 'date': <bound method SQLiteAdapter.parse_date of <gluon.dal.SQLiteAdapter object>>, 'datetime': <bound method SQLiteAdapter.parse_datetime of <gluon.dal.SQLiteAdapter object>>, 'decimal': <bound method SQLiteAdapter.parse_decimal of <gluon.dal.SQLiteAdapter object>>, 'double': <bound method SQLiteAdapter.parse_double of <gluon.dal.SQLiteAdapter object>>, 'float': <bound method SQLiteAdapter.parse_double of <gluon.dal.SQLiteAdapter object>>, 'id': <bound method SQLiteAdapter.parse_id of <gluon.dal.SQLiteAdapter object>>, 'integer': <bound method SQLiteAdapter.parse_integer of <gluon.dal.SQLiteAdapter object>>, ...}"
+p277
+sS'value'
+p278
+S"'adasd'"
+p279
+sS'key'
+p280
+S"'list:reference'"
+p281
+ssg70
+I2096
+sg71
+(dp282
+I2091
+S'            return value'
+p283
+sI2092
+S"        elif field_type == 'blob' and not blob_decode:"
+p284
+sI2093
+S'            return value'
+p285
+sI2094
+S'        else:'
+p286
+sI2095
+S'            key = REGEX_TYPE.match(field_type).group(0)'
+p287
+sI2096
+S'            return self.parsemap[key](value, field_type)'
+p288
+sI2097
+S''
+sI2098
+S'    def parse_reference(self, value, field_type):'
+p289
+sI2099
+S'        referee = field_type[10:].strip()'
+p290
+sI2100
+S"        if not '.' in referee:"
+p291
+ssg83
+S"(self=<gluon.dal.SQLiteAdapter object>, value='adasd', field_type='list:reference report_status', blob_decode=True)"
+p292
+sg85
+S'parse_value'
+p293
+sa(dp294
+g62
+S'D:\\project\\web\\web2py\\gluon\\dal.py'
+p295
+sg64
+(dp296
+S'global bar_decode_integer'
+p297
+S'<function bar_decode_integer>'
+p298
+sS'value'
+p299
+S"'adasd'"
+p300
+ssg70
+I2168
+sg71
+(dp301
+I2163
+S'            value = bar_decode_integer(value)'
+p302
+sI2164
+S'        return value'
+p303
+sI2165
+S''
+sI2166
+S'    def parse_list_references(self, value, field_type):'
+p304
+sI2167
+S'        if not isinstance(self, NoSQLAdapter):'
+p305
+sI2168
+S'            value = bar_decode_integer(value)'
+p306
+sI2169
+S'        return [self.parse_reference(r, field_type[5:]) for r in value]'
+p307
+sI2170
+S''
+sI2171
+S'    def parse_list_strings(self, value, field_type):'
+p308
+sI2172
+S'        if not isinstance(self, NoSQLAdapter):'
+p309
+ssg83
+S"(self=<gluon.dal.SQLiteAdapter object>, value='adasd', field_type='list:reference report_status')"
+p310
+sg85
+S'parse_list_references'
+p311
+sa(dp312
+g62
+S'D:\\project\\web\\web2py\\gluon\\dal.py'
+p313
+sg64
+(dp314
+S'builtinlong'
+p315
+S"<type 'long'>"
+p316
+sS'x'
+S"'adasd'"
+p317
+sS'value.split'
+p318
+S'<built-in method split of str object>'
+p319
+sS'x.strip'
+p320
+S'<built-in method strip of str object>'
+p321
+sS'value'
+p322
+S"'adasd'"
+p323
+ssg70
+I7472
+sg71
+(dp324
+I7467
+S''
+sI7468
+S''
+sI7469
+S'def bar_decode_integer(value):'
+p325
+sI7470
+S"    if not hasattr(value, 'split') and hasattr(value, 'read'):"
+p326
+sI7471
+S'        value = value.read()'
+p327
+sI7472
+S"    return [long(x) for x in value.split('|') if x.strip()]"
+p328
+sI7473
+S''
+sI7474
+S''
+sI7475
+S'def bar_decode_string(value):'
+p329
+sI7476
+S"    return [x.replace('||', '|') for x in"
+p330
+ssg83
+S"(value='adasd')"
+p331
+sg85
+S'bar_decode_integer'
+p332
+sasS'pyver'
+p333
+S'Python 2.7.8: C:\\Python27\\python.exe (prefix: C:\\Python27)'
+p334
+sS'session'
+p335
+g57
+(S's\x1a\x00\x00\x00<div><table></table></div>'
+tRp336
+sS'etype'
+p337
+S"<type 'exceptions.ValueError'>"
+p338
+sS'date'
+p339
+S'Mon Oct 27 12:29:12 2014'
+p340
+sS'response'
+p341
+g57
+(S's\xc52\x00\x00<div><table><tr><td style="font-weight:bold;vertical-align:top;">body</td><td style="vertical-align:top;">:</td><td><div>&lt;cStringIO.StringO object at 0x0D085A20&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cookies</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">session_id_tatserver</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1-9086f068-608f-4da8-91bd-a9e39450588a<table><tr><td style="font-weight:bold;vertical-align:top;">comment</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">domain</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">expires</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">httponly</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">max-age</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path</td><td style="vertical-align:top;">:</td><td><div>/</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">secure</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">version</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">delimiters</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>{{</div></td></tr><tr><td><div>}}</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">files</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">flash</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">form_label_separator</td><td style="vertical-align:top;">:</td><td><div>: </div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">formstyle</td><td style="vertical-align:top;">:</td><td><div>table3cols</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">generic_patterns</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>*</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">google_analytics_id</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">headers</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">X-Powered-By</td><td style="vertical-align:top;">:</td><td><div>web2py</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">logo</td><td style="vertical-align:top;">:</td><td><div><a class="brand" href="http://www.web2py.com/"><b>web<span>2</span>py</b>&trade;&nbsp;</a></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">menu</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div><table><tr><td><div>Home</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/tatserver/default/index</div></td></tr><tr><td><div><table></table></div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div><span class="highlighted">web2py</span></div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>http://web2py.com</div></td></tr><tr><td><div><table><tr><td><div><table><tr><td><div>My Sites</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/admin/default/site</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>\xe8\xaf\xa5\xe5\xba\x94\xe7\x94\xa8</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/admin/default/design/tatserver</div></td></tr><tr><td><div>[(&lt;lazyT &#x27;Controller&#x27;&gt;, False, &#x27;/admin/default/edit/tatserver/controllers/default.py&#x27;), (&lt;lazyT &#x27;View&#x27;&gt;, False, &#x27;/admin/default/edit/tatserver/views/default/show_plan.html&#x27;), (&lt;lazyT &#x27;Layout&#x27;&gt;, False, &#x27;/admin/default/edit/tatserver/views/layout.html&#x27;), (&lt;lazyT &#x27;Stylesheet&#x27;&gt;, False, &#x27;/admin/default/edit/tatserver/static/css/web2py.css&#x27;), (&lt;lazyT &#x27;DB Model&#x27;&gt;, False, &#x27;/admin/default/edit/tatserver/models/db.py&#x27;), (&lt;lazyT &#x27;Menu Model&#x27;&gt;, False, &#x27;/admin/default/edit/tatserver/models/menu.py&#x27;), (&lt;lazyT &#x27;Database&#x27;&gt;, False, &#x27;/tatserver/appadmin/index&#x27;), (&lt;lazyT &#x27;Errors&#x27;&gt;, False, &#x27;/admin/default/errors/tatserver&#x27;), (&lt;lazyT &#x27;About&#x27;&gt;, False, &#x27;/admin/default/about/tatserver&#x27;)]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>web2py.com</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>http://www.web2py.com</div></td></tr><tr><td><div>[(&lt;lazyT &#x27;Download&#x27;&gt;, False, &#x27;http://www.web2py.com/examples/default/download&#x27;), (&lt;lazyT &#x27;Support&#x27;&gt;, False, &#x27;http://www.web2py.com/examples/default/support&#x27;), (&lt;lazyT &#x27;Demo&#x27;&gt;, False, &#x27;http://web2py.com/demo_admin&#x27;), (&lt;lazyT &#x27;Quick Examples&#x27;&gt;, False, &#x27;http://web2py.com/examples/default/examples&#x27;), (&lt;lazyT &#x27;FAQ&#x27;&gt;, False, &#x27;http://web2py.com/AlterEgo&#x27;), (&lt;lazyT &#x27;Videos&#x27;&gt;, False, &#x27;http://www.web2py.com/examples/default/videos/&#x27;), (&lt;lazyT &#x27;Free Applications&#x27;&gt;, False, &#x27;http://web2py.com/appliances&#x27;), (&lt;lazyT &#x27;Plugins&#x27;&gt;, False, &#x27;http://web2py.com/plugins&#x27;), (&lt;lazyT &#x27;Layouts&#x27;&gt;, False, &#x27;http://web2py.com/layouts&#x27;), (&lt;lazyT &#x27;Recipes&#x27;&gt;, False, &#x27;http://web2pyslices.com/&#x27;), (&lt;lazyT &#x27;Semantic&#x27;&gt;, False, &#x27;http://web2py.com/semantic&#x27;)]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Documentation</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>http://www.web2py.com/book</div></td></tr><tr><td><div>[(&lt;lazyT &#x27;Preface&#x27;&gt;, False, &#x27;http://www.web2py.com/book/default/chapter/00&#x27;), (&lt;lazyT &#x27;Introduction&#x27;&gt;, False, &#x27;http://www.web2py.com/book/default/chapter/01&#x27;), (&lt;lazyT &#x27;Python&#x27;&gt;, False, &#x27;http://www.web2py.com/book/default/chapter/02&#x27;), (&lt;lazyT &#x27;Overview&#x27;&gt;, False, &#x27;http://www.web2py.com/book/default/chapter/03&#x27;), (&lt;lazyT &#x27;The Core&#x27;&gt;, False, &#x27;http://www.web2py.com/book/default/chapter/04&#x27;), (&lt;lazyT &#x27;The Views&#x27;&gt;, False, &#x27;http://www.web2py.com/book/default/chapter/05&#x27;), (&lt;lazyT &#x27;Database&#x27;&gt;, False, &#x27;http://www.web2py.com/book/default/chapter/06&#x27;), (&lt;lazyT &#x27;Forms and Validators&#x27;&gt;, False, &#x27;http://www.web2py.com/book/default/chapter/07&#x27;), (&lt;lazyT &#x27;Email and SMS&#x27;&gt;, False, &#x27;http://www.web2py.com/book/default/chapter/08&#x27;), (&lt;lazyT &#x27;Access Control&#x27;&gt;, False, &#x27;http://www.web2py.com/book/default/chapter/09&#x27;), (&lt;lazyT &#x27;Services&#x27;&gt;, False, &#x27;http://www.web2py.com/book/default/chapter/10&#x27;), (&lt;lazyT &#x27;Ajax Recipes&#x27;&gt;, False, &#x27;http://www.web2py.com/book/default/chapter/11&#x27;), (&lt;lazyT &#x27;Components and Plugins&#x27;&gt;, False, &#x27;http://www.web2py.com/book/default/chapter/12&#x27;), (&lt;lazyT &#x27;Deployment Recipes&#x27;&gt;, False, &#x27;http://www.web2py.com/book/default/chapter/13&#x27;), (&lt;lazyT &#x27;Other Recipes&#x27;&gt;, False, &#x27;http://www.web2py.com/book/default/chapter/14&#x27;), (&lt;lazyT &#x27;Buy this book&#x27;&gt;, False, &#x27;http://stores.lulu.com/web2py&#x27;)]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Community</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>None</div></td></tr><tr><td><div>[(&lt;lazyT &#x27;Groups&#x27;&gt;, False, &#x27;http://www.web2py.com/examples/default/usergroups&#x27;), (&lt;lazyT &#x27;Twitter&#x27;&gt;, False, &#x27;http://twitter.com/web2py&#x27;), (&lt;lazyT &#x27;Live Chat&#x27;&gt;, False, &#x27;http://webchat.freenode.net/?channels=web2py&#x27;)]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Plugins</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>None</div></td></tr><tr><td><div>[(&#x27;plugin_wiki&#x27;, False, &#x27;http://web2py.com/examples/default/download&#x27;), (&lt;lazyT &#x27;Other Plugins&#x27;&gt;, False, &#x27;http://web2py.com/plugins&#x27;), (&lt;lazyT &#x27;Layout Plugins&#x27;&gt;, False, &#x27;http://web2py.com/layouts&#x27;)]</div></td></tr></table></div></td></tr></table></div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">meta</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">author</td><td style="vertical-align:top;">:</td><td><div>Your Name &lt;you@example.com&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">generator</td><td style="vertical-align:top;">:</td><td><div>Web2py Web Framework</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">keywords</td><td style="vertical-align:top;">:</td><td><div>web2py, python, framework</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">models_to_run</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>^\\w+\\.py$</div></td></tr><tr><td><div>^default/\\w+\\.py$</div></td></tr><tr><td><div>^default/show_plan/\\w+\\.py$</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">postprocessing</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_client</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_cookie_compression_level</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_cookie_expires</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_cookie_key</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_data_name</td><td style="vertical-align:top;">:</td><td><div>session_data_tatserver</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_file</td><td style="vertical-align:top;">:</td><td><div>&lt;open file &#x27;D:\\\\project\\\\web\\\\web2py\\\\applications\\\\tatserver\\\\sessions\\\\061\\\\1c7\\\\127.0.0.1-9086f068-608f-4da8-91bd-a9e39450588a&#x27;, mode &#x27;rb+&#x27; at 0x0CB5EDE0&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_filename</td><td style="vertical-align:top;">:</td><td><div>D:\\project\\web\\web2py\\applications\\tatserver\\sessions\\127.0.0.1-9086f068-608f-4da8-91bd-a9e39450588a</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_hash</td><td style="vertical-align:top;">:</td><td><div>98239b1dff9dba15b0f3ab22800da948</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_id</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1-9086f068-608f-4da8-91bd-a9e39450588a</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_id_name</td><td style="vertical-align:top;">:</td><td><div>session_id_tatserver</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_locked</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_masterapp</td><td style="vertical-align:top;">:</td><td><div>tatserver</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_new</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_storage_type</td><td style="vertical-align:top;">:</td><td><div>file</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">status</td><td style="vertical-align:top;">:</td><td><div>200</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">subtitle</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">title</td><td style="vertical-align:top;">:</td><td><div>Tatserver</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">view</td><td style="vertical-align:top;">:</td><td><div>default/show_plan.html</div></td></tr></table></div>'
+tRp342
+sS'locals'
+p343
+(dp344
+S'x'
+S"'adasd'"
+p345
+sS'value'
+p346
+S"'adasd'"
+p347
+sssS'traceback'
+p348
+S'Traceback (most recent call last):\n  File "D:\\project\\web\\web2py\\gluon\\restricted.py", line 224, in restricted\n    exec ccode in environment\n  File "D:\\project\\web\\web2py\\applications\\tatserver\\controllers/default.py", line 409, in <module>\n  File "D:\\project\\web\\web2py\\gluon\\globals.py", line 392, in <lambda>\n    self._caller = lambda f: f()\n  File "D:\\project\\web\\web2py\\applications\\tatserver\\controllers/default.py", line 219, in show_plan\n    return dict(list_plan= db(db.test_plan).select())\n  File "D:\\project\\web\\web2py\\gluon\\dal.py", line 10749, in select\n    return adapter.select(self.query, fields, attributes)\n  File "D:\\project\\web\\web2py\\gluon\\dal.py", line 2472, in select\n    return super(SQLiteAdapter, self).select(query, fields, attributes)\n  File "D:\\project\\web\\web2py\\gluon\\dal.py", line 1881, in select\n    return self._select_aux(sql, fields, attributes)\n  File "D:\\project\\web\\web2py\\gluon\\dal.py", line 1862, in _select_aux\n    return processor(rows, fields, self._colnames, cacheable=cacheable)\n  File "D:\\project\\web\\web2py\\gluon\\dal.py", line 2246, in parse\n    value = self.parse_value(value, ft, blob_decode)\n  File "D:\\project\\web\\web2py\\gluon\\dal.py", line 2096, in parse_value\n    return self.parsemap[key](value, field_type)\n  File "D:\\project\\web\\web2py\\gluon\\dal.py", line 2168, in parse_list_references\n    value = bar_decode_integer(value)\n  File "D:\\project\\web\\web2py\\gluon\\dal.py", line 7472, in bar_decode_integer\n    return [long(x) for x in value.split(\'|\') if x.strip()]\nValueError: invalid literal for long() with base 10: \'adasd\'\n'
+p349
+s.

@@ -1,0 +1,27 @@
+{{extend 'layout.html'}}
+
+<h1 style="color:blue; text-align:center">Devices on {{=db.client[request.args[0]].name}}</h1>
+
+<table width="954" align="center" border="2">
+<tr style="text-align:center;font-size: 18px" id="headline" >
+<th bgcolor="#FF9966">Device ID</th>
+<th bgcolor="#FF9966">Product name</th>
+<th bgcolor="#FF9966">Display ID</th>
+<th bgcolor="#FF9966">Hardware</th>
+<th bgcolor="#FF9966">Region</th>
+<th bgcolor="#FF9966">Build Type</th>
+<th bgcolor="#FF9966">Build Date</th>
+
+</tr>
+{{for device in list_device:}}
+<tr>
+<td bgcolor="#FF9966">{{=device.name}}</td>
+<td bgcolor="#FF9966">{{=device.product}}</td>
+<td bgcolor="#FF9966">{{=device.display_id}}</td>
+<td bgcolor="#FF9966">{{=device.hardware}}</td>
+<td bgcolor="#FF9966">{{=device.region}}</td>
+<td bgcolor="#FF9966">{{=device.build_type}}</td>
+<td bgcolor="#FF9966">{{=device.build_date}}</td>
+</tr>
+{{pass}}
+</table>

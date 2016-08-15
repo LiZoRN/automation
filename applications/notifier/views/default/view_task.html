@@ -1,0 +1,33 @@
+{{extend 'layout.html'}}
+<div class="well">
+<h2>{{=task.title}}</h2>
+<div>
+    {{=A('Edit Task',_href=URL('edit_task',args=task.id),_class='btn')}}
+</div>
+    <strong>Create on {{=task.created_on}} by {{=fullname(task.created_by)}} assigned to {{=fullname(task.assigned_to)}} {{=show_status(task.status)}}</strong>
+
+{{=MARKMIN(task.description)}}
+</div>
+
+{{for post in posts:}}
+<div class="alert alert-warning alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close" data-id={{=post.id}}><span aria-hidden="true">&times;</span></button>
+        <strong>{{=prettydate(post.created_on)}} {{=fullname(post.created_by)}} said:</strong><br/>
+            {{=post.body}}
+</div>
+{{pass}}
+<script>
+
+jQuery(function(){
+    jQuery('[data-dismiss]').click(function(){
+        var t=jQuery(this);
+        var id = t.attr('data-id');
+        jQuery.post('{{=URL('delete_post')}}',{id:id});
+    });
+});
+</script>
+<h3>Add a comment</h3>
+{{=form.custom.begin}}
+{{=form.custom.widget.body}}
+{{=form.custom.submit}}
+{{=form.custom.end}}

@@ -1,0 +1,71 @@
+{{extend 'layout.html'}}
+
+<div class="well">
+    <h3>Sumary</h3>
+<ul>
+<li>The target is <strong> {{="level%s. %s ( 5 devices )"%(plan.std_level.levels,plan.std_level.description) if plan.std_level else "NA"}}</strong></li>
+    <ul>
+       <li> Pass Rate for every module SHOULD > 95%</li>
+       <li>Valid MTBF for single DUT(Device Under Test) MUST>=40H</li>
+    </ul>
+<!--<li>The test is <span class="{{=report.results}}">{{=resaults}}</span> and <strong>MTBF</strong> is {{=mtbf}}</li>-->
+<li><strong>The actual MTBF</strong> is {{=mtbf}}</li>
+</ul>
+
+<h3>Stability Status</h3>
+<table width="954" align="center" border="2" cellpadding=0 cellspace=0>
+
+<tr style="text-align:center;font-size: 14px" id="headline">
+<th align="center" bgcolor='#66CCFF'>SW</th>
+<th align="center" bgcolor='#66CCFF'>Device</th>
+<th align="center" bgcolor='#66CCFF'>MTBF</th>
+<th align="center" bgcolor='#66CCFF'>Status</th>
+
+
+{{for name in status_span:}}
+<th align="center" bgcolor='#66CCFF'>{{=name}}</th>
+{{pass}}
+</tr>
+
+<td align="center" bgcolor='#FFCC66' height="20" rowspan = {{=5*len(devices)}}>{{=report.sw}}</td>
+
+{{for d in devices:}}
+<td align="center" bgcolor='#FFCC66' height="20" rowspan = 5>{{=d.name}} {{=A('meminfo', _href=URL('meminfo','current', args=d.id)) if db(db.meminfo.device_report == d.id).select().first() else ""}}</td>
+<td align="center" bgcolor='#FFCC66'height="20" rowspan = 5>{{=d.mtbf}}</td>
+{{if logs.has_key(d.id):}}
+<td class="status" align="center" bgcolor='#FF6600'height="20" rowspan = 5><a id="tips" title = "{{=logs[d.id].brief}}" href="{{=URL('fetch_log', args=[d.id,plan.plan_name,plan.sw,plan.begin_time,logs[d.id].title])}}" >{{=logs[d.id].title}}</a></td>
+{{else:}}
+<td align="center" bgcolor='#FFCC66'height="20" rowspan = 5 class="{{=d.status}}">{{=d.status}}</td>
+{{pass}}
+<tr>
+{{if len(status_span) > 0:}}
+<th style="text-align:center" align="center" height="20" bgcolor="#66CCFF" colspan={{=len(status_span)}}>Avg Pass Rate</th>
+{{pass}}
+</tr>
+
+<tr>
+{{for name in status_span:}}
+    {{case=db((db.case_report.report == report.id)&(db.case_report.device_name == d.name)&(db.case_report.case_name == name)).select().first()}}
+    {{if case!=None and case.passrate!=None and int(case.passrate.split(".")[0]) < 95:}}
+        <td align="center"  height="20" style="color:red">{{=case.passrate if case else "NA"}}</td>
+    {{else:}}
+        <td align="center"  height="20">{{=case.passrate if case else "NA"}}</td>
+    {{pass}}
+{{pass}}
+
+<tr>
+<th style="text-align:center" align="center" height="20" bgcolor="#99CC66" colspan={{=len(status_span)}}>Avg Loop Time</th>
+</tr>
+
+{{for name in status_span:}}
+    {{case=db((db.case_report.report == report.id)&(db.case_report.device_name == d.name)&(db.case_report.case_name == name)).select().first()}}
+    <td align="center"  height="20">{{=case.avgtime if case else "NA"}}</td>
+{{pass}}
+</tr>
+</tr>
+
+{{pass}}
+
+</table>
+</div>
+[ {{=A('Home', _href=URL('index', args=request.args))}}]

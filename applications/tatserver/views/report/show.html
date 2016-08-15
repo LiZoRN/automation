@@ -1,0 +1,64 @@
+{{extend 'layout.html'}}
+
+<h1 style="color:blue; text-align:center">View {{=plan.plan_name}} Report</h1>
+<table width="954" align="center" border="2" cellpadding=0 cellspace=0>
+<tr style="text-align:center;font-size: 18px" id="headline">
+<th align="center" bgcolor='#66CCFF'>SW</th>
+<th align="center" bgcolor='#66CCFF'>Device</th>
+<th align="center" bgcolor='#66CCFF'>MTBF</th>
+<th align="center" bgcolor='#66CCFF'>Status</th>
+{{tempth =dict()}}
+{{for d,cases in report.items():}}
+{{ if len(tempth.keys()) < len(report[d]["status"]):}}
+    {{tempth = report[d]['status']}}
+{{pass}}
+{{pass}}
+{{for name in sorted(tempth.keys()):}}
+<th align="center" bgcolor='#66CCFF'>{{=name.split("_")[-1]}}</th>
+{{pass}}
+
+</tr>
+
+<td align="center" bgcolor='#FFCC66' height="27" rowspan = {{=5*len(report.keys())}}>{{=plan["sw"]}}</td>
+{{for d,cases in report.items():}}
+
+<td align="center" bgcolor='#FFCC66' height="27" rowspan = 5>{{=d}}</td>
+<td align="center" bgcolor='#FFCC66'height="27" rowspan = 5>{{=cases['runtime']}}</td>
+
+{{if cases.has_key("except") and cases["except"]!="":}}
+<td class="status" align="center" bgcolor='#FF6600'height="27" rowspan = 5><a id="tips" title = "{{=cases["except"][1]}}" href="{{=URL('get_log', args=[d,plan.plan_name,plan.sw,plan.begin_time,cases["except"][0]])}}" >{{=cases["except"][0]}}</a></td>
+{{else:}}
+<td align="center" bgcolor='#FFCC66'height="27" rowspan = 5>{{=plan.status}}</td>
+{{pass}}
+
+<tr>
+<th style="text-align:center" align="center" height="27" bgcolor="#66CCFF" colspan={{=len(report[d]["status"])}}>Avg Pass Rate</th>
+</tr>
+
+<tr>
+{{for name in sorted(cases['status'].keys()):}}
+<td align="center"  height="27">{{=cases['status'][name]["passrate"]}}</td>
+{{pass}}
+</tr>
+
+<tr>
+<th style="text-align:center" align="center" height="27" bgcolor="#99CC66" colspan={{=len(report[d]["status"])}}>Avg Loop Time</th>
+</tr>
+
+<tr>
+{{for name in sorted(cases['status'].keys()):}}
+<td align="center" height="27">{{=cases['status'][name]["avgtime"]}}</td>
+{{pass}}
+</tr>
+{{pass}}
+{{pass}}
+</tr>
+
+</td>
+{{pass}}
+</tr>
+
+
+</table>
+[ {{=A('Home', _href=URL('index', args=request.args))}}
+| {{=A('Send Via Email', _href=URL('mailto',args=[plan,report]))}} ]

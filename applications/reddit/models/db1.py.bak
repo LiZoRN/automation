@@ -1,0 +1,10 @@
+# -*- coding: utf-8 -*-
+
+db.define_table('category',Field('name'))
+
+db.define_table('post',
+                Field('category','reference category'),
+                Field('title','string'),
+                Field('body','text'),
+                Field('vote','integer'),
+                auth.signature)

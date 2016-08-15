@@ -1,0 +1,16 @@
+{{extend 'layout.html'}}
+<h2 style="color:blue; text-align:center">view TAT Client Status</h2>
+
+<table width="954" align="center" border="2">
+  <tr style="text-align:center;font-size: 18px" id="headline">
+    <td align="center" width="354">
+    {{=A(B(T("All Test Plan")), _href=URL('tatserver','default','show_plan'))}}
+    </td>
+    <td align="center" width="354">
+    {{=A(B(T("All Client")), _href=URL('tatserver','default','show_clients'))}}
+    </td>
+    <td align="center" width="354">
+    {{=A(B(T("All Devices")), _href=URL('tatserver','default','show_all_devices'))}}
+    </td>
+  </tr>
+ </table>

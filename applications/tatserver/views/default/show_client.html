@@ -1,0 +1,17 @@
+{{extend 'layout.html'}}
+
+<h1 style="color:blue; text-align:center">All Client View</h1>
+<table width="954" align="center" border="2">
+<tr style="text-align:center;font-size: 18px" id="headline">
+<th align="left">Client Name</th>
+<th align="left">url</th>
+</tr>
+<tr>
+<td align="left">{{=client.name}}    [ {{=A('edit', _href=URL('edit_client', args=client.id))}}| {{=A('show device', _href=URL('show_device', args=client.id))}} ]</td>
+<td align="left">{{=client.url}}</td>
+</tr>
+
+</table>
+
+[ {{=A('new client', _href=URL('new_client', args=request.args))}}
+| {{=A('show all device', _href=URL('show_all_devices'))}} ]

@@ -1,0 +1,40 @@
+{{extend 'layout.html'}}
+
+{{for plan,list_status in all_report.items():}}
+
+<h1 style="color:#42cfff; text-align:left">View {{=plan}} Report</h1>
+<table width="954" align="center" border="2" cellpadding=0 cellspace=0>
+<tr style="text-align:center;font-size: 18px" id="headline">
+<th align="center" bgcolor='#66CCFF'>Device</th>
+<th align="center" bgcolor='#66CCFF'>SW</th>
+<th align="center" bgcolor='#66CCFF'>MTBF</th>
+<th align="center" bgcolor='#66CCFF'>Status</th>
+
+</tr>
+{{for d,status in list_status.items():}}
+<tr>
+<td align="center" bgcolor='#FFCC66' height="27">{{=d}}</td>
+<td align="center" bgcolor='#FFCC66' height="27">{{=status["sw"]}}</td>
+<td align="center" bgcolor='#FFCC66'height="27">{{=status['runtime']}}</td>
+<td align="center" height="100%" >
+
+<table align="center" width="100%" height="100%">
+<th align="center" height="27"  bgcolor="#FF9966">case</th>
+<th align="center" height="27" bgcolor="#99CC66">Avg Pass Rate</th>
+<th align="center" height="27" bgcolor="#66CCFF">Avg Loop Time</th>
+{{for name in sorted(status['status'].keys()):}}
+<tr>
+<td align="center" height="27" bgcolor="#FF9966">{{=name.split("_")[-1]}}</td>
+<td align="center" height="27" bgcolor="#99CC66">{{=status['status'][name]["passrate"]}}</td>
+<td align="center" height="27" bgcolor="#66CCFF">{{=status['status'][name]["avgtime"]}}</td>
+</tr>
+{{pass}}
+</table>
+</td>
+{{pass}}
+</tr>
+</table>
+{{pass}}
+
+[ {{=A('Home', _href=URL('index', args=request.args))}}
+| {{=A('Send Via Email', _href=URL('email_report'))}} ]

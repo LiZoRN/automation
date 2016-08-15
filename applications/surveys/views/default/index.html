@@ -1,0 +1,8 @@
+
+{{extend 'layout.html'}}
+{{if auth.user:}}
+{{=A('create new survey',_class='btn',_href=URL('create'))}}
+{{=grid}}
+{{else:}}
+        welcome to this survey app, login in or sign up to continue.
+{{pass}}

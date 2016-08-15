@@ -1,0 +1,21 @@
+{{extend 'layout.html'}}
+
+<h1 style="color:blue; text-align:center">Show Client Status</h1>
+
+<table width="954" align="center" border="2">
+<tr style="text-align:center;font-size: 18px" id="headline">
+<th align="left">Client Name</th>
+<th align="left">plan Name</th>
+<th align="left">Status</th>
+<th align="left">Tester</th>
+</tr> 
+{{i=0}}{{for client in list_client:}}{{i=i+1}}
+<tr>
+<td align="left">{{=client.client_name}}</td>
+
+<td align="left">{{=client.plan_list}}</td>
+<td align="left">{{=client.status}}</td>
+<td align="left">{{=client.testor_name}}</td>
+</tr>
+{{pass}}
+</table>

@@ -1,0 +1,62 @@
+{{for c,d in report.items():}}
+{{for dn,result in d.items():}}
+<table width="954" align="center" border="2">
+<h4>Device {{=c}}-{{=dn}}</h4>
+<th align="left">section number</th>
+<th align="left">Total Loop Times</th>
+<th align="left">Loop Round</th>
+<th align="left">Success Rate</th>
+
+ {{for item in result["RESULTS"]["value"]:}}
+    {{if item.has_key("PLANTYPE"):}}
+        <h5>Plan type: {{=item["PLANTYPE"]["value"]}}</h5>
+    {{elif item.has_key("TimeStamp"):}}
+        <h5>Start time: {{=item["TimeStamp"]["value"]}}</h5>
+    {{elif item.has_key("CASES"):}}
+        {{for case in item["CASES"]["value"]:}}
+            {{for attr in case['Case']["value"]: }}
+                <tr>
+                {{if attr.has_key("NAME"):}}
+                    {{section_number=attr["NAME"]["value"]}}
+                {{pass}}
+                {{if attr.has_key("TOTALTIMES"):}}
+                    {{total_times=attr["TOTALTIMES"]["value"]}}
+                {{pass}}
+                {{if attr.has_key("SuccessRate"):}}
+                    {{success_rate=attr["SuccessRate"]["value"]}}
+                {{pass}}
+                {{if attr.has_key("DATA"):}}
+                    {{loop_cnt=0}}
+                    {{for loop in attr["DATA"]["value"]:}}
+                        {{loop_cnt+=1}}
+                        <td align="left">{{=section_number}}</td>
+                        <td align="left">{{=total_times}}</td>
+                        <td>
+                        <table align="left" border="1">
+                        <th align="left">Num.</th>
+                        <th align="left">time</th>
+                        <th align="left">success times</th>
+                        <tr>
+                        <td align="center">{{=loop_cnt}}</td>
+                        {{for time in loop['LOOP']["value"]:}}
+                            {{if time.has_key("TIME"):}}
+                                <td align="center">{{=time["TIME"]["value"]}}</td>
+                            {{elif time.has_key("SUCCESSTIMES"):}}
+                                <td align="center">{{=time["SUCCESSTIMES"]["value"]}}</td>
+                            {{pass}}
+                        {{pass}}
+                        </tr>>
+                        </table>
+                        </td>
+                        <td align="left">{{=success_rate}}</td>
+                    {{pass}}
+                {{pass}}
+                </tr>
+            {{pass}}
+        {{pass}}
+    {{pass}}
+{{pass}}
+{{pass}}
+{{pass}}
+
+</table>

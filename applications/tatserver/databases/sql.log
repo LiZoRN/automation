@@ -1,0 +1,301 @@
+timestamp: 2015-11-26T16:28:25.367000
+CREATE TABLE auth_user(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    first_name CHAR(128),
+    last_name CHAR(128),
+    email CHAR(512),
+    password CHAR(512),
+    registration_key CHAR(512),
+    reset_password_key CHAR(512),
+    registration_id CHAR(512)
+);
+success!
+timestamp: 2015-11-26T16:28:25.376000
+CREATE TABLE auth_group(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    role CHAR(512),
+    description TEXT
+);
+success!
+timestamp: 2015-11-26T16:28:25.384000
+CREATE TABLE auth_membership(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES auth_user (id) ON DELETE CASCADE,
+    group_id INTEGER REFERENCES auth_group (id) ON DELETE CASCADE
+);
+success!
+timestamp: 2015-11-26T16:28:25.392000
+CREATE TABLE auth_permission(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_id INTEGER REFERENCES auth_group (id) ON DELETE CASCADE,
+    name CHAR(512),
+    table_name CHAR(512),
+    record_id INTEGER
+);
+success!
+timestamp: 2015-11-26T16:28:25.399000
+CREATE TABLE auth_event(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    time_stamp TIMESTAMP,
+    client_ip CHAR(512),
+    user_id INTEGER REFERENCES auth_user (id) ON DELETE CASCADE,
+    origin CHAR(512),
+    description TEXT
+);
+success!
+timestamp: 2015-11-26T16:28:25.404000
+CREATE TABLE auth_cas(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES auth_user (id) ON DELETE CASCADE,
+    created_on TIMESTAMP,
+    service CHAR(512),
+    ticket CHAR(512),
+    renew CHAR(1)
+);
+success!
+timestamp: 2015-11-26T16:28:25.427000
+CREATE TABLE scheduler_task(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    application_name CHAR(512),
+    task_name CHAR(512),
+    group_name CHAR(512),
+    status CHAR(512),
+    function_name CHAR(512),
+    uuid CHAR(255) UNIQUE,
+    args TEXT,
+    vars TEXT,
+    enabled CHAR(1),
+    start_time TIMESTAMP,
+    next_run_time TIMESTAMP,
+    stop_time TIMESTAMP,
+    repeats INTEGER,
+    retry_failed INTEGER,
+    period INTEGER,
+    prevent_drift CHAR(1),
+    timeout INTEGER,
+    sync_output INTEGER,
+    times_run INTEGER,
+    times_failed INTEGER,
+    last_run_time TIMESTAMP,
+    assigned_worker_name CHAR(512)
+);
+success!
+timestamp: 2015-11-26T16:28:25.433000
+CREATE TABLE scheduler_run(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id INTEGER REFERENCES scheduler_task (id) ON DELETE CASCADE,
+    status CHAR(512),
+    start_time TIMESTAMP,
+    stop_time TIMESTAMP,
+    run_output TEXT,
+    run_result TEXT,
+    traceback TEXT,
+    worker_name CHAR(512)
+);
+success!
+timestamp: 2015-11-26T16:28:25.437000
+CREATE TABLE scheduler_worker(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    worker_name CHAR(255) UNIQUE,
+    first_heartbeat TIMESTAMP,
+    last_heartbeat TIMESTAMP,
+    status CHAR(512),
+    is_ticker CHAR(1),
+    group_names TEXT,
+    worker_stats TEXT
+);
+success!
+timestamp: 2015-11-26T16:28:25.442000
+CREATE TABLE scheduler_task_deps(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    job_name CHAR(512),
+    task_parent INTEGER,
+    task_child INTEGER REFERENCES scheduler_task (id) ON DELETE CASCADE,
+    can_visit CHAR(1)
+);
+success!
+timestamp: 2015-11-26T16:28:25.448000
+CREATE TABLE department(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name CHAR(512)
+);
+success!
+timestamp: 2015-11-26T16:28:25.452000
+CREATE TABLE team(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name CHAR(512),
+    department INTEGER REFERENCES department (id) ON DELETE CASCADE
+);
+success!
+timestamp: 2015-11-26T16:28:25.457000
+CREATE TABLE department_manager(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    department INTEGER REFERENCES department (id) ON DELETE CASCADE,
+    manager INTEGER REFERENCES auth_user (id) ON DELETE CASCADE
+);
+success!
+timestamp: 2015-11-26T16:28:25.462000
+CREATE TABLE team_leader(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    team INTEGER REFERENCES team (id) ON DELETE CASCADE,
+    leader INTEGER REFERENCES auth_user (id) ON DELETE CASCADE
+);
+success!
+timestamp: 2015-11-26T16:28:25.467000
+CREATE TABLE project(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name CHAR(512),
+    projtype CHAR(512),
+    sw CHAR(512),
+    appli CHAR(512),
+    perso CHAR(512),
+    perso_m CHAR(512)
+);
+success!
+timestamp: 2015-11-26T16:28:25.472000
+CREATE TABLE tool(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name CHAR(512),
+    ver CHAR(512)
+);
+success!
+timestamp: 2015-11-26T16:28:25.477000
+CREATE TABLE client(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name CHAR(512),
+    url CHAR(512),
+    workstation CHAR(1)
+);
+success!
+timestamp: 2015-11-26T16:28:25.481000
+CREATE TABLE device(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name CHAR(512),
+    display_id CHAR(512),
+    build_date CHAR(512),
+    product CHAR(512),
+    region CHAR(512),
+    hardware CHAR(512),
+    build_type CHAR(512),
+    build_version CHAR(512),
+    client INTEGER REFERENCES client (id) ON DELETE CASCADE,
+    status CHAR(512)
+);
+success!
+timestamp: 2015-11-26T16:28:25.488000
+CREATE TABLE std(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    phase CHAR(512),
+    levels CHAR(512),
+    dut CHAR(512),
+    mtbf CHAR(512)
+);
+success!
+timestamp: 2015-11-26T16:28:25.492000
+CREATE TABLE std_level(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    levels CHAR(512),
+    std TEXT,
+    description CHAR(512),
+    dut CHAR(512)
+);
+success!
+timestamp: 2015-11-26T16:28:25.496000
+CREATE TABLE plan_schedual(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name CHAR(512)
+);
+success!
+timestamp: 2015-11-26T16:28:25.503000
+CREATE TABLE test_plan(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    plan_name CHAR(512),
+    project INTEGER REFERENCES project (id) ON DELETE CASCADE,
+    test_case CHAR(512),
+    tool INTEGER REFERENCES tool (id) ON DELETE CASCADE,
+    runcircle CHAR(512),
+    test_devices TEXT,
+    devices TEXT,
+    sdevices TEXT,
+    begin_time TIMESTAMP,
+    status CHAR(512),
+    sw CHAR(512),
+    std_level INTEGER REFERENCES std_level (id) ON DELETE CASCADE,
+    is_active CHAR(1),
+    created_on TIMESTAMP,
+    created_by INTEGER REFERENCES auth_user (id) ON DELETE CASCADE,
+    modified_on TIMESTAMP,
+    modified_by INTEGER REFERENCES auth_user (id) ON DELETE CASCADE
+);
+success!
+timestamp: 2015-11-26T16:28:25.509000
+CREATE TABLE report(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name CHAR(512),
+    sw CHAR(512),
+    datetime TIMESTAMP,
+    report CHAR(512),
+    results CHAR(512),
+    std_level INTEGER REFERENCES std_level (id) ON DELETE CASCADE,
+    mtbf CHAR(512),
+    mailed CHAR(1)
+);
+success!
+timestamp: 2015-11-26T16:28:25.514000
+CREATE TABLE device_report(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    report INTEGER REFERENCES report (id) ON DELETE CASCADE,
+    name CHAR(512),
+    test_type CHAR(512),
+    status CHAR(512),
+    mtbf CHAR(512),
+    mailed CHAR(1)
+);
+success!
+timestamp: 2015-11-26T16:28:25.519000
+CREATE TABLE case_report(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    report INTEGER REFERENCES report (id) ON DELETE CASCADE,
+    device_name CHAR(512),
+    case_name CHAR(512),
+    passrate CHAR(512),
+    avgtime CHAR(512),
+    run_time CHAR(512),
+    status CHAR(512)
+);
+success!
+timestamp: 2015-11-26T16:28:25.524000
+CREATE TABLE case_defects(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    test_plan INTEGER REFERENCES test_plan (id) ON DELETE CASCADE,
+    name CHAR(512),
+    counts INTEGER
+);
+success!
+timestamp: 2015-11-26T16:28:25.529000
+CREATE TABLE report_log(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    device_report INTEGER REFERENCES device_report (id) ON DELETE CASCADE,
+    title CHAR(512),
+    brief CHAR(512),
+    log_file CHAR(512)
+);
+success!
+timestamp: 2015-11-26T16:28:25.534000
+CREATE TABLE meminfo(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    device_report INTEGER REFERENCES device_report (id) ON DELETE CASCADE,
+    memory_data CHAR(512)
+);
+success!
+timestamp: 2015-11-26T16:28:25.539000
+CREATE TABLE email(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sendto TEXT,
+    subject CHAR(512),
+    body TEXT,
+    sender CHAR(512),
+    status CHAR(512),
+    author CHAR(512)
+);
+success!

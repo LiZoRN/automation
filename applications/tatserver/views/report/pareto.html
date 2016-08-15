@@ -1,0 +1,54 @@
+{{extend 'layout.html'}}
+
+<script type="text/javascript" src="{{=URL('static','js/FUSIONCHARTS.COM/fusioncharts.js')}}"></script>
+<script type="text/javascript" src="{{=URL('static','js/FUSIONCHARTS.COM/themes/fusioncharts.theme.fint.js')}}"></script>
+
+
+    <ul>
+    <strong>  Pareto&ABC analysis</strong> is a Quality Tool,such as "80/20" rule to measurements the quantity and cost of the product.<br/>Help to Continuous improvement the product.
+    <li>A(<80%) is a critical defect area, and the major factor that clip the wings of our product.<br/>Modules in this area is not very good ,consume most of our resource,and need to estimate and improvement</li>
+    <li>B(80%~90%) is a normal defect area and the secondary factor that need to do far more.</li>
+    <li>C(90%~100%) is a mini defect area, and modules in this area is somehow good.</li>
+    </ul>
+    <div id="paretoCanvas" style="float: left; width: auto;height: auto">Loading graph...</div>
+
+
+<script>
+
+function case_pareto(data) {
+        var revenueChart = new FusionCharts({
+            "type": "pareto2d",
+            "renderAt": "paretoCanvas",
+            "width": "800",
+            "height": "400",
+            "dataFormat": "json",
+            "dataSource": {
+                "chart": {
+      "theme": "carbon",
+      "caption": "stability module pareto analysis",
+      "subCaption": "History",
+      "xAxisName": "Case",
+      "pYAxisName": "Num of defects",
+      "sYAxisname": "Cumulative Percentage",
+      "showValues": "0",
+      "showXAxisLine": "1",
+      "lineThickness": "2",
+      "lineColor": "#8e0000",
+      "lineAlpha": "80",
+      "lineDashed": "1",
+      "lineDashLen": "5",
+      "lineDashGap": "3"
+
+                },
+                "data": data
+            }
+
+        });
+        revenueChart.render();
+};
+jQuery(document).ready(function(){
+   //pareto
+    var testdata = jQuery.parseJSON('{{=pareto}}'.replace(/&#x27;/g,'"'));  //escape is not safe
+    case_pareto(testdata);
+});
+</script>

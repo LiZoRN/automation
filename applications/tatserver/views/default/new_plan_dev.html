@@ -1,0 +1,44 @@
+{{extend 'layout.html'}}
+{{
+response.files.insert(0,URL('static','js/jquery.js'))
+}}
+<h2>Select Test Scrip</h2>
+ <form action="#" enctype="multipart/form-data" method="post">
+ <table><tbody><tr id="test_plan_plan_name__row">
+ <td class="w2p_fl">
+ <label for="test_plan_plan_name" id="test_plan_plan_name__label">Plan Name: </label></td>
+ <td class="w2p_fw"><input class="string" id="test_plan_plan_name" name="plan_name" type="text" value=""></td>
+ <td class="w2p_fc"></td></tr><tr id="test_plan_TestScript_Branch__row">
+ <td class="w2p_fl"><label for="test_plan_TestScript_Branch" id="test_plan_TestScript_Branch__label">Testscript Branch: </label></td>
+ <td class="w2p_fw"><input class="string" id="test_plan_TestScript_Branch" name="TestScript_Branch" type="text" value=""></td>
+ <td class="w2p_fc"></td></tr><tr id="test_plan_Tool__row">
+ <td class="w2p_fl"><label for="test_plan_Tool" id="test_plan_Tool__label">Tool: </label></td>
+ <td class="w2p_fw"><select class="generic-widget" id="test_plan_Tool" name="Tool">
+ <option value=""></option><option value="1">1.0</option></select></td>
+ <td class="w2p_fc"></td></tr><tr id="test_plan_test_devices__row">
+ <td class="w2p_fl"><label for="test_plan_test_devices" id="test_plan_test_devices__label">Test Devices: </label></td>
+ <td class="w2p_fw">
+     <select class="generic-widget" id="test_plan_test_devices" multiple="multiple" name="test_devices" size="5">
+     {{for k,v in devices.items():}}
+         <option value="{{=int(k)}}">{{=v}}</option>
+     {{pass}}
+     </select>
+</td><td class="w2p_fc"></td>
+ </tr>
+ <tr id="test_plan_begin_time__row">
+ <td class="w2p_fl"><label for="test_plan_begin_time" id="test_plan_begin_time__label">Begin Time: </label></td>
+ <td class="w2p_fw"><input class="datetime" id="test_plan_begin_time" name="begin_time" type="text" value=""></td>
+ <td class="w2p_fc"></td></tr><tr id="test_plan_tester__row">
+ <td class="w2p_fl"><label for="test_plan_tester" id="test_plan_tester__label">Tester: </label></td>
+ <td class="w2p_fw"><input class="string" id="test_plan_tester" name="tester" type="text" value="tester"></td>
+ <td class="w2p_fc"></td></tr><tr id="test_plan_sw__row">
+ <td class="w2p_fl"><label for="test_plan_sw" id="test_plan_sw__label">Sw: </label></td>
+ <td class="w2p_fw"><input class="string" id="test_plan_sw" name="sw" type="text" value=""></td>
+ <td class="w2p_fc"></td></tr><tr id="submit_record__row"><td class="w2p_fl"></td>
+ <td class="w2p_fw"><input type="submit" value="提交" class="btn"></td>
+ <td class="w2p_fc"></td>
+ </tr>
+ </tbody>
+ </table>
+ <div style="display:none;"><input name="_formkey" type="hidden"><input name="_formname" type="hidden" value="test_plan/create"></div>
+ </form>

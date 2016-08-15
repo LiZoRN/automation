@@ -1,0 +1,44 @@
+{{extend 'layout.html'}}
+
+<h1 style="color:blue; text-align:center">All Test Plan</h1>
+<table align="center" border="2">
+<tr style="text-align:center;font-size: 18px" id="headline">
+<td bgcolor="#FF9966">Test Plan</td>
+<td bgcolor="#FF9966">sw</td>
+<td bgcolor="#FF9966">tool</td>
+<td bgcolor="#FF9966">Begin Time</td>
+<td bgcolor="#FF9966">Status</td>
+<td bgcolor="#FF9966">Tester</td>
+<td bgcolor="#FF9966">Device</td>
+<td bgcolor="#FF9966">Operation</td>
+</tr>
+{{for plan in list_plan:}}
+<tr>
+<td bgcolor="#FF9966">{{=plan.plan_name}} [ {{=A('edit', _href=URL('edit', args=plan.id))}} ]</td>
+<td bgcolor="#FF9966">
+
+<select>
+  <option>Volvo</option>
+  <option>Saab</option>
+  {{for sw in plan.sw:}}
+      <option>{{=sw}}</option>
+  {{pass}}
+</select>
+
+</td>
+<td bgcolor="#FF9966">{{=plan.tool_ver}}</td>
+<td bgcolor="#FF9966">{{=plan.begin_time}}</td>
+<td bgcolor="#FF9966">{{=plan.status}}</td>
+<td bgcolor="#FF9966">{{=plan.created_by.first_name}} {{=plan.created_by.last_name}}</td>
+<td bgcolor="#FF9966">
+{{=plan.devices}}
+</td>
+
+<td bgcolor="#FF9966"> {{=A('start', _href=URL('start', args=plan.id))}} |{{=A('stop', _href=URL('stop', args=plan.id))}}
+    |{{=A('finish', _href=URL('finish', args=plan.id))}}| {{=A('history', _href=URL("report",'history', args=plan.id))}}|{{=A('report', _href=URL('report','show_plus', args=plan.id))}}</td>
+</tr>
+{{pass}}
+</table>
+[ {{=A('new plan', _href=URL('new', args=request.args))}}
+| {{=A('show status', _href=URL('show_current_report'))}} ]<br />
+

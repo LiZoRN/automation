@@ -1,0 +1,6 @@
+{{extend 'layout.html'}}
+
+{{=grid}}
+{{if auth.user and auth.has_membership("managers"):}}
+{{=A('create', _href=URL('create'), _class='btn btn-primary')}}
+{{pass}}

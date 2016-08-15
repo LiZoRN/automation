@@ -1,0 +1,65 @@
+{{extend 'layout.html'}}
+
+<h1 style="color:blue; text-align:center">All Test Plan</h1>
+<table align="center" border="2">
+<tr style="text-align:center;font-size: 18px" id="headline">
+<td bgcolor="#FF9966">Test Plan</td>
+<td bgcolor="#FF9966">sw</td>
+<td bgcolor="#FF9966">tool</td>
+<td bgcolor="#FF9966">Begin Time</td>
+<td bgcolor="#FF9966">Status</td>
+<td bgcolor="#FF9966">Tester</td>
+<td bgcolor="#FF9966">Device</td>
+<td bgcolor="#FF9966">Operation</td>
+</tr>
+{{for plan in list_plan:}}
+<tr>
+<td bgcolor="#FF9966">{{=plan.plan_name}} [ {{=A('edit', _href=URL('edit_plan', args=plan.id))}} ]</td>
+<td bgcolor="#FF9966">{{=plan.sw}}</td>
+<td bgcolor="#FF9966">{{=plan.tool_ver}}</td>
+<td bgcolor="#FF9966">{{=plan.begin_time}}</td>
+<td bgcolor="#FF9966">{{=plan.status}}</td>
+<td bgcolor="#FF9966">{{=plan.tester}}</td>
+<td bgcolor="#FF9966">
+{{=plan.display_devices}}
+</td>
+
+<td bgcolor="#FF9966"> {{=A('start', _href=URL('start_plan', args=plan.id))}} |{{=A('stop', _href=URL('stop_plan', args=plan.id))}}
+    |{{=A('finish', _href=URL('finish_plan', args=plan.id))}}| {{=A('report', _href=URL('report','show', args=plan.id))}}</td>
+</tr>
+{{pass}}
+</table>
+[ {{=A('new plan', _href=URL('new_plan', args=request.args))}}
+| {{=A('show status', _href=URL('show_current_report'))}} ]<br />
+
+<div class="listtitle fl width120">
+    <div id="word_select_value_list" class="listtitle-in">
+        office 2007
+    </div>
+    <input id="word_select_value" value="2007" type="hidden">
+    <div style="width: 126px; display: none;" id="bigdiv" class="listtitle-cont2">
+        <a href="javascript:getWordSelectType('2007');">office 2007</a>
+        <a href="javascript:getWordSelectType('2010');">office 2010</a>
+        <a href="javascript:getWordSelectType('2003');">office 2003</a>
+    </div>
+</div>
+<script>
+jQuery(document).ready(function() {
+    $("#report").mouseover(function () {
+        $(".listtitle-cont2").show();
+    }).mouseout(function () {
+        $(".listtitle-cont2").hide();
+    });
+
+    $(".listtitle-cont2").mouseover(function () {
+        $(this).show();
+    }).mouseout(function () {
+        $(this).hide();
+    });
+})
+</script>
+
+<form>
+   <input name="name" onkeyup="ajax('{{=URL('default', 'echo')}}', ['name'], 'target')" />
+</form>
+<div id="target"></div>

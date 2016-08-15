@@ -1,0 +1,28 @@
+{{extend 'layout.html'}}
+
+
+<div class="well">
+<h3>All clients display</h3>
+<table align="center" >
+<tr style="text-align:center;font-size: 18px" id="headline">
+<th >Name</th>
+<th >url</th>
+<th >devices</th>
+</tr>
+{{for client in clients:}}
+<tr>
+<td class={{="workstation" if client.workstation == True else None }}>{{=A(client.name, _href=URL('edit', args=client.id))}}</td>
+<td >{{=client.url}}</td>
+<td >
+{{for raw in db(db.device.client==client.id).select():}}
+    {{=A(B(T(raw.name)), _href=URL('device','show',args=raw.id))}}
+{{pass}}
+</td>
+<td>[ {{=A('flush', _href=URL('device','flush', args=client.id))}}]</td>
+</tr>
+{{pass}}
+</table>
+
+[ {{=A('create', _href=URL('create'))}}
+| {{=A('show all', _href=URL('show_all'))}}]
+</div>

@@ -1,0 +1,52 @@
+{{left_sidebar_enabled,right_sidebar_enabled=False,('message' in globals())}}
+{{extend 'layout.html'}}
+{{if request.function=='list_by_votes':}}
+{{=A('list by datetime',_class='btn',_href=URL('list_by_datetime',args=(category.name,page)))}}
+{{=A('post a link',_class='btn btn-primary',_href=URL('create',args=category.name))}}
+{{elif request.function=='list_by_datetime':}}
+{{=A('list by votes',_class='btn',_href=URL('list_by_votes',args=(category.name,page)))}}
+{{=A('post a link',_class='btn btn-primary',_href=URL('create',args=category.name))}}
+{{else:}}
+{{=author(user_id)}}
+{{pass}}
+
+
+<hr/>
+
+{{=category.name.title()}}
+{{for post in rows:}}
+    <div class = 'well'>
+        <table>
+            <tr data-id="{{=post.id}}"><td><button data-direction="down">-</button></td>
+                <td><span class="votes">{{=post.votes}}</span></td><td><button data-direction="up">+</button><</td>
+                <td><strong><a href="{{=URL(post.url) if post.url else post.title}}">{{=post.title}}</a></strong></td>
+            </tr>
+            <tr><td colspan="3"></td><td><a href="{{=URL('view',args=post.id)}}">comments</a></td></tr>
+        </table>
+    </div>
+{{pass}}
+
+{{if page>0:}}
+    {{=A('previous',_class='btn',_href=URL(args=(category.name,page-1)))}}
+{{pass}}
+
+{{if len(rows)==10:}}
+    {{=A('next',_class='btn',_href=URL(args=(category.name,page+1)))}}
+{{pass}}
+
+<script>
+    function do_ajax_vote(t,direction){
+        var id = jQuery(t).closest('tr').attr('data-id');
+        jQuery.ajax({method:'post',url:'{{=URL('vote_callback')}}',
+            data:{'id':id,'direction':direction},
+            success:function(data){
+                jQuery(t).closest('tr').find('.votes').html(data);
+            }
+        });
+    }
+
+    jQuery(function(){
+        jQuery('[data-direction=up').click(function(){do_ajax_vote(this,'up')});
+        jQuery('[data-direction=down').click(function(){do_ajax_vote(this,'down')});
+    });
+</script>

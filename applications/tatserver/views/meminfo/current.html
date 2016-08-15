@@ -1,0 +1,90 @@
+{{extend 'layout.html'}}
+
+<script type="text/javascript" src="{{=URL('static','js/jscharts.js')}}"></script>
+<script type="text/javascript" src="{{=URL('static','js/flotr2.min.js')}}"></script>
+
+<div id="meminfoCanvas">Loading graph...</div>
+
+<script>
+var myColorPlane = ['blue','green','red','yellow','gray','aliceblue','blueviolet','chartreuse','coral','darkslategray','hotpink']
+function getRandomColorFromPlane(i){
+    //return "#"+("00000"+((Math.random()*16777215+0.5)>>0).toString(16)).slice(-6);
+    //return '#'+Math.floor(Math.random()*16777215).toString(16);
+    console.log(myColorPlane.length);
+    return myColorPlane[i%myColorPlane.length]
+}
+
+function getRandomColor(){
+    return "#"+("00000"+((Math.random()*16777215+0.5)>>0).toString(16)).slice(-6);
+}
+
+function meminfo_graph(data) {
+    var myChart = new JSChart('meminfoCanvas', 'line');
+	myChart.setSize(1024, 400);
+	myChart.setTitle('Top Memmory information');
+	myChart.setTitleColor('#8E8E8E');
+	myChart.setAxisNameX('time');
+	myChart.setAxisNameY('meminfo');
+	myChart.setAxisValuesNumberY(100);
+	myChart.setIntervalStartY(0);
+	myChart.setIntervalEndY(400000);
+    var index = 0;
+    var jsdata = new Array();
+    for (var i in data){
+        for(var j in data[i]) {
+            myChart.setLabelX([index,data[i][j][0]]);
+            index+=1;
+        }
+        break;
+    }
+    for (var i in data) {
+        for(var j in data[i]) {
+            var runtime = Number(data[i][j][1]);
+            if(jsdata.hasOwnProperty(i)){
+                jsdata[i].push([Number(j),runtime])
+            }
+            else {
+                jsdata[i]=[[Number(j),runtime]]
+            }
+        }
+    }
+    myChart.setShowXValues(false);
+    myChart.setTitleColor('#454545');
+    myChart.setAxisValuesColor('#454545');
+    myChart.setFlagColor('#9D16FC');
+    myChart.setFlagRadius(4);
+    myChart.setAxisPaddingRight(100);
+    myChart.setLegendShow(true);
+
+    myChart.setAxisValuesNumberX(index);
+    var case_index = 0;
+    for(var m in jsdata){
+        var color = getRandomColor(case_index);
+        myChart.setDataArray(jsdata[m], color);
+        myChart.setLineColor(getRandomColor(), color);
+        myChart.setLegendForLine(color, m);
+        case_index+=1;
+    }
+    myChart.draw();
+}
+
+function string2array(name,value){
+    var aa = new Array();
+    var aName = name.split(',');
+    var aValue = value.split(',');
+    for(var i=0;i<aName.length;i++)
+    {
+        if(aName[i]!==""||aValue[i]!==""){
+            aa[i]=[aName[i],Number(aValue[i])];
+        }
+    }
+    return aa;
+}
+
+jQuery(document).ready(function(){
+   console.log('{{=json_memdata}}'.replace(/&#x27;/g,'"'))
+   var data = jQuery.parseJSON('{{=json_memdata}}'.replace(/&quot;/g,'"'));  //escape is not safe
+   meminfo_graph(data);
+});
+
+</script>

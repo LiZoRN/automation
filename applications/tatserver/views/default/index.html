@@ -1,0 +1,20 @@
+{{('message' in globals())}}
+{{extend 'layout.html'}}
+<div class = "well">
+<b>notice:</b><br/>
+<b>1.Any Question to <a href="mailto:zhuo.li@tcl.com">here</a></b><br/>
+<b>2.Any Idea or Bug Report to <a href="http://bugzilla.tcl-ta.com/enter_bug.cgi?product=SW.AutomationTest">here</a></b><br/>
+<strong> Register your domain email。</strong><br/>
+<h1>You can do without login</h1>
+<ul>
+  <li>{{=A(B(T("click here to show plan")), _href=URL('tatserver','plan','show'))}}</li>
+</ul>
+<h1>You can do with login</h1>
+<ul>
+  <li>{{=A(B(T("click here to make plan")), _href=URL('tatserver','plan','create'))}}</li>
+  <li>{{=A(B(T("click here to show all clients and flush the devices")), _href=URL('tatserver','client','show_all'))}}</li>
+  <!--<li>{{=A(B(T("click here to flush devices")), _href=URL('tatserver','default','flush_all_devices'))}}</li>-->
+  <li>{{=A(B(T("click here to show devices")), _href=URL('tatserver','device','show_all'))}}</li>
+</ul>
+</div>
+

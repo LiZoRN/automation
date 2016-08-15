@@ -1,0 +1,14 @@
+{{extend 'layout.html'}}
+
+<h1>Edit Client</h1>
+{{=form}}
+
+
+<script>
+jQuery(document).ready(function(){
+   jQuery('input.delete').prop('onclick',
+     'if(this.checked) if(!confirm(
+        "{{=T('Sure you want to delete this object?')}}"))
+      this.checked=false;');
+});
+</script>

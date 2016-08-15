@@ -1,0 +1,267 @@
+{{('message' in globals())}}
+{{extend 'layout.html'}}
+
+
+<script>
+
+        //二元组
+    function TwoDimensional(x, y){
+        var _x = x;
+        var _y = y;
+
+        this.GetX = function () { return _x; }
+        this.SetX = function (x) { _x = x; }
+        this.GetY = function () { return _y; }
+        this.SetY = function (y) { _y = y; }
+
+    }
+    //扩展RoundRect类
+    //params
+    //x : 圆角矩阵左上方x轴坐标
+    //y : 圆角矩阵左上方y轴坐标
+    //width : 圆角矩阵宽度
+    //height : 圆角矩阵高度
+    //radius : 圆角矩阵圆角弧度
+    //degree : 圆角矩阵线宽
+    //color : 笔触颜色
+    //fillStyle : 填充颜色
+    //isFill : 是否填充
+    //isStroke : 是否绘制
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, width, height, radius, degree, color, fillStyle, isFill, isStroke) {
+        if(typeof isStroke == 'undefined') isStroke = true;
+        if(typeof radius == 'undefined') radius = 5;
+        this.beginPath();
+        this.moveTo(x + radius, y);
+        this.lineTo(x + width - radius, y);
+        this.quadraticCurveTo(x + width, y, x + width, y + radius);
+        this.lineTo(x + width, y + height - radius);
+        this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        this.lineTo(x + radius, y + height);
+        this.quadraticCurveTo(x, y + height, x, y + height - radius);
+        this.lineTo(x, y + radius);
+        this.quadraticCurveTo(x, y, x + radius, y);
+        this.lineWidth = degree;
+        this.strokeStyle = color;
+        this.closePath();
+        this.fillStyle = fillStyle;
+        if(isStroke) this.stroke();
+        if(isFill) this.fill();
+    }
+    //细胞类
+    //params
+    //life 细胞是否生存
+    function Cell (life){
+        //是否生存
+        var _life = life;
+
+        //获得细胞是否生存
+        this.IsLive = function (){ return _life; }
+        //杀死该细胞
+        this.Kill = function (){ _life = false; }
+        //复活该细胞
+        this.Relive = function (){ _life = true; }
+    }
+    //舞台类
+    //params
+    //canvasName : 画布名
+    //rows : 行数
+    //columns : 列数
+    function Stage (canvasName, rows, columns){
+        //画布名
+        var _canvasName = canvasName;
+        //网格行数
+        var _rows = rows;
+        //网格列数
+        var _columns = columns;
+        //画布句柄
+        var _canvas = document.getElementById(_canvasName);
+        //画布高度
+        var _canvasHeight = _canvas.height;
+        //画布宽度
+        var _canvasWidth = _canvas.width;
+        //画笔
+        var _canvasContext = _canvas.getContext('2d');
+        //格宽
+        var _unitWidth = _canvasWidth / _columns;
+        //格高
+        var _unitHeight = _canvasHeight / _rows;
+        //细胞繁衍数
+        var _breedNumber = 0;
+        //细胞生存数
+        var _liveNumber = 0;
+        //细胞矩阵
+        var _cellMatrx = new Array(_rows);
+        for(var i = 0; i < _rows; i++){
+            _cellMatrx[i] = new Array(_columns);
+            for(var j = 0; j < _columns; j++){
+                _cellMatrx[i][j] = new Cell(false);
+            }
+        }
+
+        //当鼠标移动进时隐藏
+        _canvas.style.cursor = 'none';
+
+        //绘制网格
+        this.DrawGrid = function () { _drawGrid(); }
+        function _drawGrid(){
+            _canvasContext.strokeStyle = 'rgba(0, 51, 51, 0.8)';    //网格颜色
+            _canvasContext.lineWidth = 1;   //网格宽度
+            _canvasContext.beginPath();
+            for(var i = 0; i <= _columns; i++){
+                _canvasContext.moveTo(i * _unitWidth, 0);
+                _canvasContext.lineTo(i * _unitWidth, _canvasHeight);
+            }
+            for(var i = 0; i <= _rows; i++){
+                _canvasContext.moveTo(0, i * _unitHeight);
+                _canvasContext.lineTo(_canvasWidth, i * _unitHeight);
+            }
+            _canvasContext.stroke();
+            _canvasContext.closePath();
+        }
+
+        //绘制细胞
+        this.DrawCells = function () { _drawCells(); }
+        function _drawCells(){
+            for(var i = 0; i < _rows; i++){
+                for(var j = 0; j < _columns; j++){
+                    if(_cellMatrx[i][j].IsLive()){
+                        _canvasContext.roundRect(j * _unitWidth, i * _unitHeight,
+                                _unitWidth, _unitHeight, 10, 2,
+                                'rgba(102,0,51,1)', 'rgba(102,0,51,1)',
+                                true, true);
+                    }
+                }
+            }
+        }
+
+        //复活某细胞
+        this.Relive = function (x, y) { _relive(x, y); }
+        function _relive(x, y){ _cellMatrx[x][y].Relive(); }
+
+        //杀死某细胞
+        this.Kill = function (x, y) { _kill(x, y); }
+        function _kill(x, y) { _cellMatrx[x][y].Kill(); }
+
+        //清空画布
+        this.ClearCanvas = function () { _clearCanvas(); }
+        function _clearCanvas() { _canvasContext.clearRect(0, 0, _canvasWidth, _canvasHeight); }
+
+        //刷新
+        this.Refresh = function () { _refresh(); }
+        function _refresh() {
+            _canvasContext.clearRect(0, 0, _canvasWidth, _canvasHeight);
+            _drawGrid();
+            _drawCells();
+        }
+
+        //检测细胞是否适合生长
+        //params
+        //x : x坐标轴
+        //y : y坐标轴
+        this.Check = function (x, y) { return _Check(x, y); }
+        function _Check(x, y) {
+            var cellNumber = 0;
+            for(var i = -1; i <= 1; i++){
+                for(var j = -1; j <= 1; j++){
+                    if(i == 0 && j == 0) continue;
+                    if(x + i >= 0 && x + i < _rows && y + j >= 0 && y + j < _columns)
+                    {
+                        if(_cellMatrx[x + i][y + j].IsLive()) { cellNumber++; }
+                    }
+                }
+            }
+            return cellNumber;
+        }
+
+        //设置细胞繁殖数
+        this.SetBreedNumber = function (i) { _breedNumber = i; }
+
+        //设置细胞生存数
+        this.SetLiveNumber = function (i) { _liveNumber = i; }
+
+        //检测全网格细胞并刷新网格
+        this.CheckAll = function () { _CheckAll(); }
+        function _CheckAll() {
+            var reliveList = new Array();
+            var dieList = new Array();
+            for(var i = 0; i < _rows; i++){
+                for(var j = 0; j < _columns; j++){
+                    var check = _Check(i, j);
+                    if(check == _breedNumber) reliveList.push(new TwoDimensional(i, j));
+                    else if(check != _liveNumber) dieList.push(new TwoDimensional(i, j));
+                }
+            }
+            for(var i = 0; i < reliveList.length; i++){
+                _relive(reliveList[i].GetX(), reliveList[i].GetY());
+            }
+            for(var i = 0; i < dieList.length; i++){
+                _kill(dieList[i].GetX(), dieList[i].GetY());
+            }
+            _refresh();
+        }
+
+        //鼠标移动事件
+        _canvas.onmousemove = function (e){
+            _refresh();
+            _canvasContext.strokeStyle = 'rgba(255, 100, 100, 0.8)';
+            _canvasContext.lineWidth = 5;
+            _canvasContext.beginPath();
+            _canvasContext.moveTo(0, e.pageY - _canvas.offsetTop);
+            _canvasContext.lineTo(_canvasWidth, e.pageY - _canvas.offsetTop);
+            _canvasContext.moveTo(e.pageX - _canvas.offsetLeft, 0);
+            _canvasContext.lineTo(e.pageX - _canvas.offsetLeft, _canvasHeight);
+            _canvasContext.stroke();
+            _canvasContext.closePath();
+        }
+
+        //鼠标移开事件
+        _canvas.onmouseleave = function (e) { _refresh(); }
+
+        //鼠标点击事件
+        _canvas.onmousedown = function (e){
+            var canvasY = e.pageY - _canvas.offsetTop;
+            var canvasX = e.pageX - _canvas.offsetLeft;
+            var martexY = Math.floor(canvasX / _unitWidth);
+            var martexX = Math.floor(canvasY / _unitHeight);
+            if(_cellMatrx[martexX][martexY].IsLive()){
+                _cellMatrx[martexX][martexY].Kill();
+            }
+            else{
+                _cellMatrx[martexX][martexY].Relive();
+            }
+            _refresh();
+        }
+
+    }
+</script>
+
+<body>
+    <p>细胞繁衍数　　　：<input id="CellsReproduceNumber" type="number" maxlength="1" value="0" /></p>
+    <p>细胞生存数　　　：<input id="CellsLiveNumber" type="number" maxlength="1" value="0" /></p>
+    <p>繁衍周期（毫秒）：<input id="CellsBreedCycle" type="number" max="6" value="500" /></p>
+    <p><input id="StartOrStopButton" type="button" value="开始" onclick="OnClickButton()"/></p>
+    <canvas id="Stage" width="720" height="720"></canvas>
+    <script>
+        var isStart = false;
+        var intervalHandler;
+        var stageObject = new Stage("Stage", 50, 50);
+        stageObject.Refresh();
+
+        function OnClickButton(){
+            if(isStart){
+                isStart = false;
+                clearInterval(intervalHandler);
+                document.getElementById('StartOrStopButton').value = '开始';
+            }
+            else{
+                stageObject.SetBreedNumber(document.getElementById('CellsReproduceNumber').value);
+                stageObject.SetLiveNumber(document.getElementById('CellsLiveNumber').value);
+                intervalHandler = setInterval('stageObject.CheckAll()', document.getElementById('CellsBreedCycle').value);
+                document.getElementById('StartOrStopButton').value = '停止';
+                isStart = true;
+            }
+        }
+    </script>
+</body>
+
+

@@ -1,0 +1,30 @@
+{{extend 'layout.html'}}
+
+<h1 style="color:blue; text-align:center">All Devices View</h1>
+
+<table width="954" align="center" border="2">
+<tr style="text-align:center;font-size: 18px" id="headline">
+<th bgcolor="#FF9966">Device ID</th>
+<th bgcolor="#FF9966">Product name</th>
+<th bgcolor="#FF9966">Display ID</th>
+<th bgcolor="#FF9966">Hardware</th>
+<th bgcolor="#FF9966">Region</th>
+<th bgcolor="#FF9966">Build Type</th>
+<th bgcolor="#FF9966">Build Date</th>
+<th bgcolor="#FF9966">Build Version</th>
+</tr> 
+{{for device in list_device:}}
+<tr>
+<td bgcolor="#FF9966">  {{=A(device.name, _href=URL('edit_device', args=device.id))}}</td>
+<td bgcolor="#FF9966">{{=device.product}}</td>
+<td bgcolor="#FF9966">{{=device.display_id}}</td>
+<td bgcolor="#FF9966">{{=device.hardware}}</td>
+<td bgcolor="#FF9966">{{=device.region}}</td>
+<td bgcolor="#FF9966">{{=device.build_type}}</td>
+<td bgcolor="#FF9966">{{=device.build_date}}</td>
+<td bgcolor="#FF9966">{{=device.build_version}}</td>
+</tr>
+{{pass}}
+</table>
+[ {{=A('new device', _href=URL('new_device', args=request.args))}}
+| {{=A('show all device', _href=URL('show_all_devices'))}}]

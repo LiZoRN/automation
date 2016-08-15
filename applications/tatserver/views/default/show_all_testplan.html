@@ -1,0 +1,27 @@
+{{extend 'layout.html'}}
+<h1 style="color:blue; text-align:center">Show All Testplan</h1>
+{{=list_plan}}
+
+<table width="954" align="center" border="2">
+<tr style="text-align:center;font-size: 18px" id="headline">
+<th align="left">ID</th>
+<th align="left">Plan Name</th>
+<th align="left">TestScript Branch</th>
+<th align="left">TestScript Tag</th>
+<th align="left">Tool Version</th>
+<th align="left">clients</th>
+
+</tr>
+{{for plan in list_plan:}}
+<tr>
+<td align="left">{{=plan.id}}</td>
+
+<td align="left">{{=plan.plan_name}}</td>
+<td align="left">{{=plan.TestScript_Branch}}</td>
+<td align="left">{{=plan.TestScript_Tag}}</td>
+<td align="left">{{=plan.Tool}}</td>
+<td align="left">{{=plan.test_clients}}</td>
+<td align="left">{{=plan.begin_time}}</td>
+</tr>
+{{pass}}
+</table>

@@ -1,0 +1,22 @@
+{{extend 'layout.html'}}
+
+<h1 style="color:blue; text-align:center">Show Device Status</h1>
+
+<table width="954" align="center" border="2">
+<tr style="text-align:center;font-size: 18px" id="headline">
+<th align="left">Devices Name</th>
+<th align="left">plan Name</th>
+<th align="left">Status</th>
+<th align="left">Tester</th>
+</tr>
+
+{{for device in list_devices:}}
+<tr>
+<td align="left">{{=device.name}}</td>
+
+<td align="left">{{=device.plan_name}}</td>
+<td align="left">{{=device.status}}</td>
+<td align="left">{{=device.tester}}</td>
+</tr>
+{{pass}}
+</table>

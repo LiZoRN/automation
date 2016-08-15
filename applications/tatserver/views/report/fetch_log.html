@@ -1,0 +1,14 @@
+{{extend 'layout.html'}}
+<div class="well">
+<h3>Summary</h3>
+<p>{{=form.title}}</p>
+<h3>Detail</h3>
+<pre>{{=form.brief}}</pre>
+<ul>
+<li>
+    <a href="{{=URL(f='download', args=form.log_file)}}">
+        [Download]
+    </a>
+</li>
+</ul>
+</div>

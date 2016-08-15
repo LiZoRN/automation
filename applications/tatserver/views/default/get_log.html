@@ -1,0 +1,13 @@
+{{extend 'layout.html'}}
+
+<h3>Summary</h3>
+<p>{{=form.log_title}} [stability]multi-media crash fatal except</p>
+<h3>Detail</h3>
+<p>{{=form.log_breif}}</p>
+<ul>
+<li>
+    <a href="{{=URL(f='download', args=form.log_file)}}">
+        [Download]
+    </a>
+</li>
+</ul>

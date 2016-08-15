@@ -1,0 +1,17 @@
+{{extend 'layout.html'}}
+<div class="'well">
+<h2>{{=A(post.title,_href=post.url) if post.url else post.title}}</h2>
+
+    {{if post.created_by==auth.user_id:}}
+        {{=A('edit',_class='btn btn-info',_href=URL('edit',args=post.id))}}
+    {{pass}}
+
+    {{=MARKMIN(post.body)}}
+</div>
+
+{{for comment in comments:}}
+    <div class="well">
+        {{=prettydate(comment.created_on)}} {{=author(comment.created_by)}} said: "{{=comment.body}}"
+    </div>
+{{pass}}
+{{=form}}
